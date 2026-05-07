@@ -9,6 +9,7 @@ import Cart from './pages/Cart';
 import Categories from './pages/Categories';
 import Profile from './pages/Profile';
 import ProductListing from './pages/ProductListing';
+import Admin from './pages/Admin';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function App() {
@@ -26,6 +27,7 @@ export default function App() {
                 <Route path="/cart" element={<PageWrapper><Cart /></PageWrapper>} />
                 <Route path="/categories" element={<PageWrapper><Categories /></PageWrapper>} />
                 <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
+                <Route path="/admin" element={<PageWrapper><Admin /></PageWrapper>} />
                 <Route path="*" element={<PageWrapper><Home /></PageWrapper>} />
               </Routes>
             </AnimatePresence>

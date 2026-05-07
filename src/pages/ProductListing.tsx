@@ -1,15 +1,38 @@
 import { useParams, Link } from 'react-router-dom';
-import { PRODUCTS, CATEGORIES } from '../data';
+import { PRODUCTS as STATIC_PRODUCTS, CATEGORIES as STATIC_CATEGORIES } from '../data';
 import { ProductCard } from '../components/ProductCard';
 import { ChevronLeft, SlidersHorizontal } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useState, useEffect } from 'react';
+import { storeService } from '../services/storeService';
+import { Product, Category } from '../types';
 
 export default function ProductListing() {
   const { categoryId } = useParams();
-  const category = CATEGORIES.find(c => c.id === categoryId);
-  const products = categoryId === 'all' || !categoryId 
-    ? PRODUCTS 
-    : PRODUCTS.filter(p => p.category === categoryId);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [category, setCategory] = useState<Category | null>(
+    STATIC_CATEGORIES.find(c => c.id === categoryId) || null
+  );
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [p, c] = await Promise.all([
+          storeService.getProducts(categoryId),
+          storeService.getCategories()
+        ]);
+        setProducts(p);
+        const currentCat = c.find(cat => cat.id === categoryId);
+        if (currentCat) setCategory(currentCat);
+      } catch (e) {
+        console.error('Error loading listing:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [categoryId]);
 
   return (
     <div className="px-4 md:px-8 py-6 space-y-8">

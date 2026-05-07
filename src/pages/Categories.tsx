@@ -1,9 +1,28 @@
-import { CATEGORIES } from '../data';
+import { CATEGORIES as STATIC_CATEGORIES } from '../data';
 import { ChevronRight, LayoutGrid } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { storeService } from '../services/storeService';
+import { Category } from '../types';
 
 export default function Categories() {
+  const [categories, setCategories] = useState<Category[]>(STATIC_CATEGORIES);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const c = await storeService.getCategories();
+        if (c.length > 0) setCategories(c);
+      } catch (e) {
+        console.error('Error loading categories:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
   return (
     <div className="px-4 md:px-8 py-8 space-y-6">
       <div className="space-y-1">
@@ -12,7 +31,7 @@ export default function Categories() {
       </div>
 
       <div className="grid gap-4">
-        {CATEGORIES.map((cat, idx) => (
+        {categories.map((cat, idx) => (
           <motion.div
             key={cat.id}
             initial={{ opacity: 0, x: -20 }}

@@ -1,12 +1,37 @@
-import { PRODUCTS, CATEGORIES } from '../data';
+import { PRODUCTS as STATIC_PRODUCTS, CATEGORIES as STATIC_CATEGORIES } from '../data';
 import { ProductCard } from '../components/ProductCard';
 import { ArrowRight, Clock, ShieldCheck, Truck, Award, Quote } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
+import { useState, useEffect } from 'react';
+import { storeService } from '../services/storeService';
+import { Product, Category } from '../types';
 
 export default function Home() {
-  const flashSaleProducts = PRODUCTS.filter(p => p.isFlashSale);
+  const [products, setProducts] = useState<Product[]>(STATIC_PRODUCTS);
+  const [categories, setCategories] = useState<Category[]>(STATIC_CATEGORIES);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function init() {
+      try {
+        const [p, c] = await Promise.all([
+          storeService.getProducts(),
+          storeService.getCategories()
+        ]);
+        if (p.length > 0) setProducts(p);
+        if (c.length > 0) setCategories(c);
+      } catch (e) {
+        console.error('Error fetching home data:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    init();
+  }, []);
+
+  const flashSaleProducts = products.filter(p => p.isFlashSale);
 
   return (
     <div className="space-y-12 pb-24 overflow-x-hidden">
@@ -106,7 +131,7 @@ export default function Home() {
           </Link>
         </div>
         <div className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <Link
               key={cat.id}
               to={`/category/${cat.id}`}
@@ -134,7 +159,7 @@ export default function Home() {
           </Link>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {PRODUCTS.slice(0, 4).map((product) => (
+          {products.slice(0, 4).map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

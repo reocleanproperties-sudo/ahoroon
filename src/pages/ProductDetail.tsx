@@ -1,20 +1,48 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Star, ChevronLeft, Heart, ShoppingBag, Truck, ShieldCheck } from 'lucide-react';
-import { PRODUCTS } from '../data';
+import { PRODUCTS as STATIC_PRODUCTS } from '../data';
 import { useCart } from '../hooks/useCart';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '../lib/utils';
+import { storeService } from '../services/storeService';
+import { Product } from '../types';
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const product = PRODUCTS.find(p => p.id === id);
-
+  
+  const [product, setProduct] = useState<Product | null>(
+    STATIC_PRODUCTS.find(p => p.id === id) || null
+  );
+  const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState('M');
   const [selectedColor, setSelectedColor] = useState('White');
+
+  useEffect(() => {
+    async function loadProduct() {
+      if (!id) return;
+      try {
+        const p = await storeService.getProduct(id);
+        if (p) setProduct(p);
+      } catch (e) {
+        console.error('Error loading product:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProduct();
+  }, [id]);
+
+  if (loading && !product) {
+    return (
+      <div className="h-96 flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!product) return <div className="p-10 text-center">Product not found</div>;
 
