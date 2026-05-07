@@ -1,33 +1,42 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingBag, Search } from 'lucide-react';
+import { ShoppingBag, Search, Settings } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
 import { cn } from '../lib/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SearchOverlay } from './SearchOverlay';
+import { auth } from '../lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export const TopNav = () => {
   const { cartCount } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      // Simplified check for UI visibility
+      setIsAdmin(user?.email === 'reocleanproperties@gmail.com');
+    });
+    return unsub;
+  }, []);
 
   return (
     <>
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-50 px-4 md:px-8 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 group">
-          <img 
-            src="/logo.png" 
-            alt="আহরোণ" 
-            className="h-10 w-auto object-contain" 
-            onError={(e) => {
-              (e.target as HTMLElement).style.display = 'none';
-            }} 
-          />
           <span className="logo-text text-3xl group-hover:text-primary transition-colors">
             আহরোণ
           </span>
         </Link>
 
         <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Link to="/admin" className="p-3 text-primary hover:bg-primary/10 transition-colors rounded-2xl flex items-center gap-2 text-xs font-bold mr-2">
+              <Settings size={18} />
+              <span className="hidden md:block">Admin</span>
+            </Link>
+          )}
           <motion.button 
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsSearchOpen(true)}

@@ -25,6 +25,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             referrerPolicy="no-referrer"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://placehold.co/400x400?text=' + encodeURIComponent(product.name);
+            }}
           />
           {product.isFlashSale && (
             <div className="absolute top-3 left-3 bg-white/90 backdrop-blur px-2 py-1 rounded-full text-[10px] font-bold text-primary shadow-sm uppercase tracking-wider">
@@ -52,9 +55,16 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               <span className="text-[10px] font-bold text-gray-500">{product.rating}</span>
             </div>
           </div>
-          <p className="text-lg font-bold text-gray-900">
-            ৳{product.price}
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-lg font-bold text-gray-900">
+              ৳{product.price}
+            </p>
+            {product.size && (
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+                {product.size} {product.unit || 'pcs'}
+              </span>
+            )}
+          </div>
         </div>
       </Link>
     </motion.div>

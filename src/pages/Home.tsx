@@ -7,6 +7,7 @@ import { motion } from 'motion/react';
 import { useState, useEffect } from 'react';
 import { storeService } from '../services/storeService';
 import { Product, Category } from '../types';
+import { CategoryIcon } from '../components/CategoryIcon';
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>(STATIC_PRODUCTS);
@@ -130,7 +131,7 @@ export default function Home() {
             See All <ArrowRight size={16} />
           </Link>
         </div>
-        <div className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4">
+        <div className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 h-32 items-center">
           {categories.map((cat) => (
             <Link
               key={cat.id}
@@ -138,8 +139,8 @@ export default function Home() {
               className="flex flex-col items-center gap-3 min-w-[100px] group"
             >
               <div className="w-20 h-20 rounded-[2rem] flex items-center justify-center transition-all duration-500 bg-white border border-gray-100 group-hover:bg-primary group-hover:border-primary group-hover:shadow-xl shadow-primary/20 group-hover:-translate-y-1">
-                <div className="text-gray-400 group-hover:text-white transition-colors text-xl font-bold">
-                  {cat.name.charAt(0)}
+                <div className="text-gray-400 group-hover:text-white transition-colors">
+                  <CategoryIcon name={cat.icon} size={32} strokeWidth={1.5} />
                 </div>
               </div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 group-hover:text-primary transition-colors">
@@ -158,7 +159,7 @@ export default function Home() {
             <ArrowRight size={20} />
           </Link>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.slice(0, 4).map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CartProvider } from './hooks/useCart';
 import { TopNav, BottomNav } from './components/Navigation';
+import { ScrollToTop } from './components/ScrollToTop';
 import { Footer } from './components/Footer';
 import Home from './pages/Home';
 import ProductDetail from './pages/ProductDetail';
@@ -15,6 +16,7 @@ import { motion, AnimatePresence } from 'motion/react';
 export default function App() {
   return (
     <Router>
+      <ScrollToTop />
       <CartProvider>
         <div className="min-h-screen border-none bg-surface pb-20 md:pb-0 font-sans selection:bg-primary selection:text-white">
           <TopNav />

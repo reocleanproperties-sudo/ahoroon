@@ -16,13 +16,19 @@ import {
   CheckCircle2,
   Clock,
   Truck,
-  AlertCircle
+  AlertCircle,
+  Image as ImageIcon,
+  Sparkles,
+  LayoutGrid
 } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
 import { adminService } from '../services/adminService';
+import { aiService } from '../services/aiService';
 import { Product, Category } from '../types';
 import { cn } from '../lib/utils';
+import { CategoryIcon } from '../components/CategoryIcon';
+import { compressImage } from '../lib/imageUtils';
 
 type Tab = 'dashboard' | 'products' | 'orders' | 'categories';
 
@@ -59,14 +65,19 @@ export default function Admin() {
     } catch (e) {
       console.error('Seed error:', e);
     }
-    const [p, o, c] = await Promise.all([
-      adminService.getProducts(),
-      adminService.getOrders(),
-      adminService.getCategories()
-    ]);
-    setProducts(p || []);
-    setOrders(o || []);
-    setCategories(c || []);
+    
+    try {
+      const [p, o, c] = await Promise.all([
+        adminService.getProducts(),
+        adminService.getOrders(),
+        adminService.getCategories()
+      ]);
+      setProducts(p || []);
+      setOrders(o || []);
+      setCategories(c || []);
+    } catch (e) {
+      console.error('Error fetching admin data:', e);
+    }
   };
 
   const handleLogin = async () => {
@@ -214,6 +225,7 @@ export default function Admin() {
           <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
             <ProductsTable 
               products={products} 
+              categories={categories}
               onEdit={(p) => {
                 setEditingProduct(p);
                 setIsModalOpen(true);
@@ -237,18 +249,23 @@ export default function Admin() {
         {activeTab === 'categories' && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {categories.map(cat => (
-              <div key={cat.id} className="bg-white p-6 rounded-3xl border border-gray-100 flex items-center justify-between">
+              <div key={cat.id} className="bg-white p-6 rounded-3xl border border-gray-100 flex items-center justify-between group hover:border-primary transition-all shadow-sm hover:shadow-lg">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-surface rounded-2xl flex items-center justify-center text-primary font-bold">
-                    {cat.name.charAt(0)}
+                  <div className="w-14 h-14 bg-surface rounded-2xl flex items-center justify-center text-primary shadow-inner">
+                    <CategoryIcon name={cat.icon} size={24} />
                   </div>
-                  <span className="font-bold text-accent-deep">{cat.name}</span>
+                  <div>
+                    <span className="block font-bold text-accent-deep">{cat.name}</span>
+                    <span className="text-[10px] text-gray-400 font-mono tracking-tighter">{cat.id}</span>
+                  </div>
                 </div>
-                <MoreVertical size={20} className="text-gray-400" />
+                <button className="p-2 text-gray-300 hover:text-primary transition-colors">
+                  <MoreVertical size={20} />
+                </button>
               </div>
             ))}
-            <button className="border-2 border-dashed border-gray-200 p-6 rounded-3xl flex items-center justify-center gap-2 text-gray-400 hover:border-primary hover:text-primary transition-all">
-              <Plus size={20} />
+            <button className="border-2 border-dashed border-gray-200 p-6 rounded-3xl flex items-center justify-center gap-2 text-gray-400 hover:border-primary hover:text-primary transition-all bg-white/50 hover:bg-white group">
+              <Plus size={20} className="group-hover:scale-110 transition-transform" />
               <span className="font-bold">Add Category</span>
             </button>
           </div>
@@ -298,9 +315,14 @@ function StatsCard({ label, value, icon: Icon, color }: any) {
   );
 }
 
-function ProductsTable({ products, onEdit, onDelete }: any) {
+function ProductsTable({ products, categories, onEdit, onDelete }: any) {
+  const getCategoryName = (id: string) => {
+    return categories.find((c: any) => c.id === id)?.name || id;
+  };
+
   return (
-    <table className="w-full text-left">
+    <div className="overflow-x-auto">
+      <table className="w-full text-left">
       <thead className="bg-surface border-b border-gray-50">
         <tr>
           <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Product</th>
@@ -315,12 +337,32 @@ function ProductsTable({ products, onEdit, onDelete }: any) {
           <tr key={p.id} className="hover:bg-surface/50 transition-colors">
             <td className="px-6 py-4">
               <div className="flex items-center gap-4">
-                <img src={p.image} className="w-12 h-12 rounded-xl object-cover border border-gray-100" referrerPolicy="no-referrer" />
-                <span className="font-bold text-accent-deep text-sm">{p.name}</span>
+                <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden flex items-center justify-center relative">
+                  {p.image ? (
+                    <img 
+                      src={p.image} 
+                      className="w-full h-full object-cover" 
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=No+Image';
+                      }}
+                    />
+                  ) : (
+                    <ImageIcon size={20} className="text-gray-300" />
+                  )}
+                </div>
+                <div>
+                  <span className="block font-bold text-accent-deep text-sm line-clamp-1">{p.name}</span>
+                  {p.size && (
+                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
+                      {p.size} {p.unit || 'pcs'}
+                    </span>
+                  )}
+                </div>
               </div>
             </td>
             <td className="px-6 py-4">
-              <span className="bg-surface px-3 py-1 rounded-full text-[10px] font-bold text-primary uppercase">{p.category}</span>
+              <span className="bg-surface px-3 py-1 rounded-full text-[10px] font-bold text-primary uppercase">{getCategoryName(p.category)}</span>
             </td>
             <td className="px-6 py-4 font-bold text-sm">৳{p.price}</td>
             <td className="px-6 py-4">
@@ -352,6 +394,7 @@ function ProductsTable({ products, onEdit, onDelete }: any) {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }
 
@@ -442,9 +485,65 @@ function ProductModal({ product, onClose, onSave, categories }: any) {
     image: product?.image || '',
     isFlashSale: product?.isFlashSale || false,
     discount: product?.discount || 0,
-    images: product?.images || []
+    images: product?.images || [],
+    unit: product?.unit || 'pcs',
+    size: product?.size || 1
   });
   const [loading, setLoading] = useState(false);
+  const [generatingAi, setGeneratingAi] = useState(false);
+
+  const handleGenerateDescription = async () => {
+    if (!formData.name) {
+      alert('Please enter a product name first');
+      return;
+    }
+    setGeneratingAi(true);
+    try {
+      const desc = await aiService.generateProductDescription(formData.name, formData.category);
+      setFormData(prev => ({ ...prev, description: desc }));
+    } catch (e) {
+      alert('AI Generation failed. Please try again.');
+    } finally {
+      setGeneratingAi(false);
+    }
+  };
+
+  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach(async (file: File) => {
+      if (formData.images.length >= 5) {
+        alert('Maximum 5 gallery images allowed');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        try {
+          const original = reader.result as string;
+          // Compress to max 800px width/height, 0.6 quality
+          const compressed = await compressImage(original, 800, 800, 0.6);
+          
+          setFormData(prev => ({
+            ...prev,
+            images: [...prev.images, compressed]
+          }));
+        } catch (err) {
+          console.error('Compression failed:', err);
+          alert('Could not process image');
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeGalleryImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -509,6 +608,34 @@ function ProductModal({ product, onClose, onSave, categories }: any) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Unit</label>
+              <select 
+                className="w-full bg-surface p-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium appearance-none"
+                value={formData.unit}
+                onChange={e => setFormData({...formData, unit: e.target.value as any})}
+              >
+                <option value="pcs">Pcs</option>
+                <option value="gm">Gram (gm)</option>
+                <option value="kg">Kilogram (kg)</option>
+                <option value="ml">Millilitre (ml)</option>
+                <option value="l">Litre (L)</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Size / Quantity</label>
+              <input 
+                required
+                type="number"
+                step="0.01"
+                className="w-full bg-surface p-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                value={formData.size}
+                onChange={e => setFormData({...formData, size: Number(e.target.value)})}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
               <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Category</label>
               <select 
                 className="w-full bg-surface p-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium appearance-none"
@@ -521,25 +648,112 @@ function ProductModal({ product, onClose, onSave, categories }: any) {
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Image URL</label>
-              <input 
-                required
-                className="w-full bg-surface p-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
-                value={formData.image}
-                onChange={e => setFormData({...formData, image: e.target.value})}
-              />
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Product Image</label>
+              <div className="flex items-center gap-4">
+                {formData.image && (
+                  <img 
+                    src={formData.image} 
+                    className="w-14 h-14 rounded-xl object-cover border border-gray-100" 
+                    alt="Preview" 
+                  />
+                )}
+                <label className="flex-1 cursor-pointer">
+                  <div className="w-full bg-surface p-4 rounded-2xl border-2 border-dashed border-gray-200 hover:border-primary transition-all flex items-center justify-center gap-2 text-gray-400 font-bold text-sm">
+                    <Plus size={18} />
+                    <span>Upload Image</span>
+                  </div>
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] as File;
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = async () => {
+                          try {
+                            const original = reader.result as string;
+                            const compressed = await compressImage(original, 800, 800, 0.6);
+                            setFormData({ ...formData, image: compressed });
+                          } catch (err) {
+                            console.error('Compression failed:', err);
+                            alert('Could not process image');
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Description</label>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Description</label>
+              <button 
+                type="button"
+                onClick={handleGenerateDescription}
+                disabled={generatingAi}
+                className="flex items-center gap-2 text-[10px] font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full hover:bg-primary/20 transition-all disabled:opacity-50"
+              >
+                {generatingAi ? (
+                  <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Sparkles size={12} />
+                )}
+                AI Auto-generate
+              </button>
+            </div>
             <textarea 
               required
               rows={4}
               className="w-full bg-surface p-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium resize-none"
+              placeholder="Enter product details or use AI to generate..."
               value={formData.description}
               onChange={e => setFormData({...formData, description: e.target.value})}
             />
+          </div>
+
+          <div className="space-y-4 pt-4 border-t border-gray-100">
+            <div className="flex items-center gap-2 text-gray-400">
+              <LayoutGrid size={16} />
+              <label className="text-xs font-bold uppercase tracking-widest">Gallery Images (Max 5)</label>
+            </div>
+            
+            <div className="flex flex-wrap gap-4">
+              {formData.images.map((img, idx) => (
+                <div key={idx} className="relative group">
+                  <img 
+                    src={img} 
+                    className="w-20 h-20 rounded-2xl object-cover border border-gray-100 shadow-sm" 
+                    alt={`Gallery ${idx}`} 
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => removeGalleryImage(idx)}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg hover:scale-110"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+              
+              {formData.images.length < 5 && (
+                <label className="w-20 h-20 bg-surface rounded-2xl border-2 border-dashed border-gray-200 hover:border-primary transition-all flex flex-col items-center justify-center gap-1 text-gray-400 cursor-pointer hover:bg-white overflow-hidden">
+                  <Plus size={20} />
+                  <span className="text-[8px] font-bold uppercase">Add</span>
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleGalleryUpload}
+                  />
+                </label>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-6 p-4 bg-surface rounded-2xl">

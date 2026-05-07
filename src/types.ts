@@ -10,6 +10,8 @@ export interface Product {
   isFlashSale?: boolean;
   discount?: number;
   images: string[];
+  unit?: 'gm' | 'kg' | 'ml' | 'l' | 'pcs';
+  size?: number;
 }
 
 export interface Category {
@@ -19,7 +21,7 @@ export interface Category {
 }
 
 export interface CartItem extends Product {
-  quantity: number;
+  cartQuantity: number;
   selectedSize?: string;
   selectedColor?: string;
 }

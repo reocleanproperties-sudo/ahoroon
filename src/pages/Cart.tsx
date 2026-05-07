@@ -55,21 +55,29 @@ export default function Cart() {
                       <Trash2 size={18} />
                     </button>
                   </div>
-                  <p className="text-xs font-medium text-gray-400 mt-1">Size: {item.selectedSize}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    {item.size ? (
+                      <p className="text-[10px] font-bold text-primary uppercase tracking-tighter bg-primary/5 px-2 py-0.5 rounded-full">
+                        {item.size} {item.unit || 'pcs'}
+                      </p>
+                    ) : (
+                      <p className="text-xs font-medium text-gray-400">Size: {item.selectedSize}</p>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="flex items-center justify-between">
                   <span className="font-bold">৳{item.price}</span>
                   <div className="flex items-center bg-gray-50 rounded-xl p-1 gap-3">
                     <button 
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      onClick={() => updateQuantity(item.id, item.cartQuantity - 1)}
                       className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white transition-all text-gray-500"
                     >
                       <Minus size={14} />
                     </button>
-                    <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
+                    <span className="text-sm font-bold w-4 text-center">{item.cartQuantity}</span>
                     <button 
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      onClick={() => updateQuantity(item.id, item.cartQuantity + 1)}
                       className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white transition-all text-gray-500"
                     >
                       <Plus size={14} />

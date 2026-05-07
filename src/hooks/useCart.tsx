@@ -26,11 +26,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (existing) {
         return prev.map(item => 
           (item.id === product.id && item.selectedSize === options?.size && item.selectedColor === options?.color)
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, cartQuantity: item.cartQuantity + quantity }
             : item
         );
       }
-      return [...prev, { ...product, quantity, selectedSize: options?.size, selectedColor: options?.color }];
+      return [...prev, { ...product, cartQuantity: quantity, selectedSize: options?.size, selectedColor: options?.color }];
     });
   };
 
@@ -43,13 +43,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       removeFromCart(productId);
       return;
     }
-    setCart(prev => prev.map(item => item.id === productId ? { ...item, quantity } : item));
+    setCart(prev => prev.map(item => item.id === productId ? { ...item, cartQuantity: quantity } : item));
   };
 
   const clearCart = () => setCart([]);
 
-  const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
-  const totalPrice = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const cartCount = cart.reduce((acc, item) => acc + item.cartQuantity, 0);
+  const totalPrice = cart.reduce((acc, item) => acc + (item.price * item.cartQuantity), 0);
 
   return (
     <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, totalPrice }}>

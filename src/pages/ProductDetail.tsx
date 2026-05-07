@@ -16,24 +16,29 @@ export default function ProductDetail() {
   const [product, setProduct] = useState<Product | null>(
     STATIC_PRODUCTS.find(p => p.id === id) || null
   );
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState('M');
   const [selectedColor, setSelectedColor] = useState('White');
 
   useEffect(() => {
-    async function loadProduct() {
+    async function loadData() {
       if (!id) return;
       try {
-        const p = await storeService.getProduct(id);
+        const [p, c] = await Promise.all([
+          storeService.getProduct(id),
+          storeService.getCategories()
+        ]);
         if (p) setProduct(p);
+        if (c) setCategories(c);
       } catch (e) {
-        console.error('Error loading product:', e);
+        console.error('Error loading product details:', e);
       } finally {
         setLoading(false);
       }
     }
-    loadProduct();
+    loadData();
   }, [id]);
 
   if (loading && !product) {
@@ -45,6 +50,9 @@ export default function ProductDetail() {
   }
 
   if (!product) return <div className="p-10 text-center">Product not found</div>;
+
+  const categoryName = categories.find(c => c.id === product.category)?.name || product.category;
+  const allImages = [product.image, ...(product.images || [])].filter(Boolean);
 
   return (
     <div className="pb-24 lg:pb-10 bg-white">
@@ -71,15 +79,15 @@ export default function ProductDetail() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                src={product.images[activeImage] || product.image}
+                src={allImages[activeImage]}
                 alt={product.name}
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
               />
             </AnimatePresence>
           </motion.div>
-          <div className="flex gap-4 px-2">
-            {product.images.map((img, idx) => (
+          <div className="flex flex-wrap gap-4 px-2">
+            {allImages.map((img, idx) => (
               <button 
                 key={idx}
                 onClick={() => setActiveImage(idx)}
@@ -98,7 +106,7 @@ export default function ProductDetail() {
         <div className="mt-8 lg:mt-0 space-y-8">
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest">
-              <span>{product.category}</span>
+              <span>{categoryName}</span>
               <span className="w-1 h-1 rounded-full bg-primary/30" />
               <div className="flex items-center gap-1">
                 <Star size={12} className="fill-yellow-400 text-yellow-400" />
@@ -118,25 +126,36 @@ export default function ProductDetail() {
 
           <div className="space-y-6 pt-4 border-t border-gray-100">
             {/* Options */}
-            <div className="space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Select Size</span>
-              <div className="flex gap-3">
-                {['S', 'M', 'L', 'XL'].map(size => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={cn(
-                      "w-12 h-12 rounded-2xl font-bold transition-all border flex items-center justify-center",
-                      selectedSize === size 
-                        ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" 
-                        : "bg-white border-gray-100 text-gray-600 hover:border-primary/30"
-                    )}
-                  >
-                    {size}
-                  </button>
-                ))}
+            {product.size ? (
+              <div className="space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Pack Quantity / Size</span>
+                <div className="flex items-center gap-3">
+                  <div className="px-6 py-3 bg-primary/10 border border-primary/20 rounded-2xl text-primary font-bold text-lg">
+                    {product.size} <span className="text-sm italic opacity-70">{product.unit || 'pcs'}</span>
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Select Size</span>
+                <div className="flex gap-3">
+                  {['S', 'M', 'L', 'XL'].map(size => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={cn(
+                        "w-12 h-12 rounded-2xl font-bold transition-all border flex items-center justify-center",
+                        selectedSize === size 
+                          ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" 
+                          : "bg-white border-gray-100 text-gray-600 hover:border-primary/30"
+                      )}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Info Cards */}
             <div className="grid grid-cols-2 gap-4">
