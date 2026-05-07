@@ -78,7 +78,7 @@ export default function ProductDetail() {
                 <span className="text-gray-400 font-normal">({product.reviews} reviews)</span>
               </div>
             </div>
-            <h1 className="text-3xl md:text-5xl font-display font-bold leading-tight">
+            <h1 className="text-3xl md:text-5xl font-display font-black leading-tight">
               {product.name}
             </h1>
             <p className="text-2xl font-bold text-gray-900">৳{product.price}</p>

@@ -30,7 +30,7 @@ export default function Home() {
             <motion.h2 
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-3xl md:text-6xl font-display font-bold text-white leading-tight mb-4"
+              className="text-3xl md:text-6xl font-display font-black text-white leading-tight mb-4 tracking-[-0.02em]"
             >
               বাংলার ঐতিহ্য, <br/>
               <span className="text-primary italic">খাঁটি স্বাদে</span> ফিরে আসুক
@@ -58,7 +58,7 @@ export default function Home() {
       {/* About Us (Mission) */}
       <section className="px-4 md:px-8 max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center pt-8">
         <div className="space-y-6">
-          <h2 className="text-3xl font-display font-bold text-accent-deep">আহরোণ সম্পর্কে</h2>
+          <h2 className="text-3xl md:text-4xl font-display font-black text-accent-deep leading-tight">আহরোণ সম্পর্কে</h2>
           <p className="text-gray-600 leading-relaxed">
             আহরোণ শুধুমাত্র একটি ব্যবসা নয়—এটি একটি মিশন। আমরা বিশ্বাস করি, বাংলার প্রতিটি ঐতিহ্যবাহী খাবারের পেছনে রয়েছে ইতিহাস, সংস্কৃতি এবং মানুষের গল্প। গত ৭ বছর ধরে আমরা দেশের বিভিন্ন অঞ্চল ঘুরে খুঁজে বের করছি আসল উৎপাদকদের।
           </p>
@@ -99,7 +99,7 @@ export default function Home() {
         <div className="flex items-end justify-between">
           <div className="space-y-1">
             <p className="text-primary font-bold text-xs uppercase tracking-widest">আমাদের পণ্যসমূহ</p>
-            <h2 className="text-3xl font-display font-bold">বিভাগ অনুযায়ী খুঁজুন</h2>
+            <h2 className="text-3xl md:text-5xl font-display font-black leading-tight">বিভাগ অনুযায়ী খুঁজুন</h2>
           </div>
           <Link to="/categories" className="text-primary text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all">
             See All <ArrowRight size={16} />
@@ -128,7 +128,7 @@ export default function Home() {
       {/* Recommended Products */}
       <section className="px-4 md:px-8 max-w-7xl mx-auto space-y-8">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-display font-bold">আপনার জন্য সেরা পণ্য</h2>
+          <h2 className="text-2xl md:text-4xl font-display font-black leading-tight">আপনার জন্য সেরা পণ্য</h2>
           <Link to="/category/all" className="p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all text-gray-500">
             <ArrowRight size={20} />
           </Link>
@@ -141,23 +141,59 @@ export default function Home() {
       </section>
 
       {/* Why Choose Us */}
-      <section className="bg-accent-deep py-20 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto text-center space-y-12">
+      <section className="bg-accent-deep py-24 px-4 md:px-8 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary rounded-full blur-[120px]" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary rounded-full blur-[120px]" />
+        </div>
+
+        <div className="max-w-7xl mx-auto text-center space-y-16 relative z-10">
           <div className="space-y-4">
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-white">কেন আহরোণ বেছে নেবেন?</h2>
-            <div className="w-24 h-1 bg-primary mx-auto rounded-full" />
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-3xl md:text-5xl font-display font-black text-white"
+            >
+              কেন আহরোণ বেছে নেবেন?
+            </motion.h2>
+            <div className="w-24 h-1.5 bg-primary mx-auto rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 [perspective:1000px]">
             {[
-              { label: "৭ বছরের অভিজ্ঞতা", val: "Experience" },
-              { label: "ভেজালমুক্ত নিশ্চয়তা", val: "Pure" },
-              { label: "সারাদেশে ডেলিভারি", val: "Delivery" },
-              { label: "পাবলিক ট্রাস্ট", val: "Trust" }
+              { label: "৭ বছরের অভিজ্ঞতা", val: "Experience", icon: Award },
+              { label: "ভেজালমুক্ত নিশ্চয়তা", val: "Pure", icon: ShieldCheck },
+              { label: "সারাদেশে ডেলিভারি", val: "Delivery", icon: Truck },
+              { label: "পাবলিক ট্রাস্ট", val: "Trust", icon: Award }
             ].map((item, i) => (
-              <div key={i} className="space-y-2">
-                <p className="text-white font-bold text-lg">{item.label}</p>
-                <div className="text-primary/60 text-xs font-mono uppercase tracking-widest">{item.val}</div>
-              </div>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                whileHover={{ 
+                  rotateX: 10, 
+                  rotateY: -10, 
+                  translateY: -10,
+                  scale: 1.05 
+                }}
+                viewport={{ once: true }}
+                transition={{ 
+                  delay: i * 0.1,
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 20
+                }}
+                className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-[2.5rem] space-y-6 group cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:shadow-primary/20 transition-shadow"
+              >
+                <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-primary/30 group-hover:scale-110 transition-transform">
+                  <item.icon className="text-white" size={28} />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-white font-display font-bold text-xl leading-tight">{item.label}</p>
+                  <div className="text-primary font-mono text-[10px] uppercase tracking-[0.2em] font-black opacity-80">{item.val}</div>
+                </div>
+              </motion.div>
             ))}
           </div>
         </div>

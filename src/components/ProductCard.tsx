@@ -44,7 +44,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <h3 className="font-display font-medium text-gray-900 group-hover:text-primary transition-colors truncate">
+            <h3 className="font-display font-bold text-sm text-gray-900 group-hover:text-primary transition-colors truncate">
               {product.name}
             </h3>
             <div className="flex items-center gap-1">
