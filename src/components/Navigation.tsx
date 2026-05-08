@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { SearchOverlay } from './SearchOverlay';
 import { auth } from '../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { adminService } from '../services/adminService';
 
 export const TopNav = () => {
   const { cartCount } = useCart();
@@ -14,9 +15,13 @@ export const TopNav = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      // Simplified check for UI visibility
-      setIsAdmin(user?.email === 'reocleanproperties@gmail.com');
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const isUserAdmin = await adminService.isAdmin();
+        setIsAdmin(isUserAdmin);
+      } else {
+        setIsAdmin(false);
+      }
     });
     return unsub;
   }, []);

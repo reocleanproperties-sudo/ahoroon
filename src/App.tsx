@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from './hooks/useCart';
 import { TopNav, BottomNav } from './components/Navigation';
 import { ScrollToTop } from './components/ScrollToTop';
@@ -30,6 +30,7 @@ export default function App() {
                 <Route path="/categories" element={<PageWrapper><Categories /></PageWrapper>} />
                 <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
                 <Route path="/admin" element={<PageWrapper><Admin /></PageWrapper>} />
+                <Route path="/login" element={<Navigate to="/admin" replace />} />
                 <Route path="*" element={<PageWrapper><Home /></PageWrapper>} />
               </Routes>
             </AnimatePresence>

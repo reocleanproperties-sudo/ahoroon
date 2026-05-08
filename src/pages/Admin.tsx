@@ -873,169 +873,177 @@ function InvoiceModal({ order, onClose }: any) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] flex items-center justify-center p-0 sm:p-4 bg-black/90 backdrop-blur-md overflow-y-auto"
+      className="fixed inset-0 z-[60] flex items-start sm:items-center justify-center p-0 sm:p-4 bg-black/90 backdrop-blur-md overflow-y-auto"
     >
-      {/* Controls - Hidden on Print */}
-      <div className="absolute top-4 right-4 sm:top-8 sm:right-8 flex flex-wrap justify-end gap-3 z-[100] print:hidden">
+      {/* Controls - Sticky on Mobile */}
+      <div className="fixed top-0 left-0 right-0 p-4 flex flex-wrap justify-center sm:justify-end gap-2 bg-black/50 backdrop-blur-md sm:bg-transparent sm:backdrop-blur-none sm:absolute sm:top-8 sm:right-8 z-[100] print:hidden">
         <button 
           onClick={() => handlePrint()}
-          className="bg-primary text-white px-6 py-3 rounded-xl shadow-xl flex items-center gap-2 font-bold hover:scale-105 transition-all active:scale-95"
+          className="bg-primary text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl shadow-xl flex items-center gap-2 font-bold hover:scale-105 transition-all active:scale-95 text-sm sm:text-base"
         >
-          <Printer size={18} /> Print Invoice
+          <Printer size={16} className="sm:w-[18px]" /> Print <span className="hidden xs:inline">Invoice</span>
         </button>
         <button 
           onClick={() => handlePrint()}
-          className="bg-accent-deep text-white px-6 py-3 rounded-xl shadow-xl flex items-center gap-2 font-bold hover:scale-105 transition-all active:scale-95"
+          className="bg-accent-deep text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl shadow-xl flex items-center gap-2 font-bold hover:scale-105 transition-all active:scale-95 text-sm sm:text-base"
         >
-          <Download size={18} /> Save PDF
+          <Download size={16} className="sm:w-[18px]" /> <span className="hidden xs:inline">Save</span> PDF
         </button>
         <button 
           onClick={onClose}
-          className="bg-white/10 text-white p-3 rounded-xl backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all"
+          className="bg-white/10 text-white p-2.5 sm:p-3 rounded-xl backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all ml-1 sm:ml-0"
         >
-          <X size={24} />
+          <X size={20} className="sm:w-6" />
         </button>
       </div>
 
-      <div ref={contentRef} className="bg-white w-full max-w-4xl min-h-screen sm:min-h-0 sm:my-12 p-6 sm:p-12 shadow-2xl relative print:shadow-none print:w-full print:max-w-none print:p-0 print:my-0" id="invoice-content">
+      <div ref={contentRef} className="bg-white w-full max-w-4xl min-h-screen sm:min-h-0 mt-20 sm:my-12 p-4 sm:p-12 shadow-2xl relative print:shadow-none print:w-full print:max-w-none print:p-0 print:my-0 print:mt-0" id="invoice-content">
         {/* Fancy Border - Mobile Only */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent-deep to-primary print:hidden" />
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-12">
-          <div className="space-y-4">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-6 sm:gap-8 mb-8 sm:mb-12">
+          <div className="space-y-4 w-full md:w-auto">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white rotate-3 shadow-lg shadow-primary/20">
-                <span className="text-2xl font-black italic uppercase">আ</span>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-xl flex items-center justify-center text-white rotate-3 shadow-lg shadow-primary/20 shrink-0">
+                <span className="text-xl sm:text-2xl font-black italic uppercase">আ</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-display font-black text-primary italic tracking-tight uppercase">আহরোণ <span className="text-accent-deep not-italic">(Aharon)</span></h1>
+              <h1 className="text-2xl sm:text-4xl font-display font-black text-primary italic tracking-tight uppercase leading-tight">
+                আহরোণ <span className="text-accent-deep not-italic font-sans text-lg sm:text-2xl block xs:inline">(Aharon)</span>
+              </h1>
             </div>
-            <div className="text-[11px] sm:text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
+            <div className="text-[10px] sm:text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
               <p>Specialized in Quality Products</p>
-              <div className="mt-2 space-y-1 text-gray-500 normal-case tracking-normal">
-                <p className="flex items-center gap-2"><MapPin size={12} className="text-primary" /> Mirpur-10, Dhaka-1216, Bangladesh</p>
-                <p className="flex items-center gap-2"><FileText size={12} className="text-primary" /> TIN: 123456789101 | BIN: 001234567-0101</p>
-                <p className="flex items-center gap-2"><User size={12} className="text-primary" /> Support: +880 1700-000000 | reocleanproperties@gmail.com</p>
+              <div className="mt-2 space-y-1.5 text-gray-500 normal-case tracking-normal">
+                <p className="flex items-start gap-2"><MapPin size={12} className="text-primary mt-0.5 shrink-0" /> Mirpur-10, Dhaka-1216, Bangladesh</p>
+                <p className="flex items-start gap-2"><FileText size={12} className="text-primary mt-0.5 shrink-0" /> TIN: 123456789101 | BIN: 001234567-0101</p>
+                <p className="flex items-start gap-2"><User size={12} className="text-primary mt-0.5 shrink-0" /> Support: +880 1700-000000 | reocleanproperties@gmail.com</p>
               </div>
             </div>
           </div>
-          <div className="w-full md:w-auto text-left md:text-right space-y-4">
-            <div className="inline-block px-6 py-2 bg-accent-deep text-white font-display font-black text-xl italic skew-x-[-12deg]">
+          <div className="w-full md:w-auto text-left md:text-right space-y-4 pt-4 md:pt-0 border-t border-gray-100 md:border-0">
+            <div className="inline-block px-4 sm:px-6 py-2 bg-accent-deep text-white font-display font-black text-lg sm:text-xl italic skew-x-[-12deg]">
               <span className="inline-block skew-x-[12deg]">INVOICE</span>
             </div>
             <div className="space-y-1.5">
-              <div className="flex md:justify-end gap-2 text-xs font-bold">
+              <div className="flex justify-start md:justify-end gap-2 text-xs font-bold">
                 <span className="text-gray-400 uppercase tracking-tighter">Invoice No:</span>
                 <span className="text-accent-deep">#{ (order.invoiceNo || order.id).slice(-8).toUpperCase() }</span>
               </div>
-              <div className="flex md:justify-end gap-2 text-xs font-bold">
+              <div className="flex justify-start md:justify-end gap-2 text-xs font-bold">
                 <span className="text-gray-400 uppercase tracking-tighter">Date:</span>
                 <span className="text-accent-deep">{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
               </div>
-              <div className="flex md:justify-end gap-2 text-xs font-bold">
+              <div className="flex justify-start md:justify-end gap-2 text-xs font-bold">
                 <span className="text-gray-400 uppercase tracking-tighter">Order Status:</span>
-                <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 text-[10px]">{order.status.toUpperCase()}</span>
+                <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 text-[10px]">{order.status?.toUpperCase() || 'PAID'}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Info Grid - Visual Styling */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          <div className="relative p-6 bg-surface rounded-3xl border border-gray-100 overflow-hidden print:border-gray-200">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 mb-8 sm:mb-12">
+          <div className="relative p-5 sm:p-6 bg-surface rounded-3xl border border-gray-100 overflow-hidden print:border-gray-200">
             <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
             <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-4">BILLING TO</h3>
             <div className="space-y-2">
-              <p className="text-xl font-black text-accent-deep">{order.customer?.name}</p>
-              <div className="space-y-1">
+              <p className="text-lg sm:text-xl font-black text-accent-deep leading-tight">{order.customerName || order.customer?.name}</p>
+              <div className="space-y-1.5">
                 <p className="text-sm font-bold text-gray-500 flex items-center gap-2">
-                  <Phone size={14} className="text-primary/40" /> {order.customer?.phone}
+                  <Phone size={14} className="text-primary/40 shrink-0" /> {order.phoneNumber || order.customer?.phone}
                 </p>
                 <p className="text-sm text-gray-400 font-medium leading-relaxed flex items-start gap-2">
-                  <MapPin size={14} className="text-primary/40 mt-1 flex-shrink-0" /> {order.customer?.address}
+                  <MapPin size={14} className="text-primary/40 mt-1 flex-shrink-0" /> {order.address || order.customer?.address}
                 </p>
               </div>
             </div>
           </div>
           
-          <div className="relative p-6 bg-accent-deep rounded-3xl overflow-hidden text-white shadow-xl shadow-accent-deep/20 print:shadow-none print:text-black print:bg-surface print:border print:border-gray-200">
+          <div className="relative p-5 sm:p-6 bg-accent-deep rounded-3xl overflow-hidden text-white shadow-xl shadow-accent-deep/20 print:shadow-none print:text-black print:bg-surface print:border print:border-gray-200">
             <h3 className="text-[10px] font-black text-white/40 print:text-accent-deep uppercase tracking-[0.2em] mb-4">PAYMENT DETAILS</h3>
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold opacity-60">Payment Method</span>
-                <span className="text-sm font-black">{order.paymentMethod || 'Cash on Delivery'}</span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="font-bold opacity-60">Payment Method</span>
+                <span className="font-black">{order.paymentMethod || 'Cash on Delivery'}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold opacity-60">Total Items</span>
-                <span className="text-sm font-black text-right">{order.items.reduce((acc: number, item: any) => acc + (item.cartQuantity || 1), 0)} Units</span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="font-bold opacity-60">Total Items</span>
+                <span className="font-black text-right">{order.items?.reduce((acc: number, item: any) => acc + (item.cartQuantity || 1), 0) || 0} Units</span>
               </div>
               <div className="pt-4 border-t border-white/10 print:border-accent-deep/10 flex justify-between items-center">
                 <span className="text-xs font-bold uppercase italic tracking-widest">Grand Total</span>
-                <span className="text-3xl font-display font-black tracking-tighter">৳{order.total}</span>
+                <span className="text-2xl sm:text-3xl font-display font-black tracking-tighter">৳{order.total}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Table - Enhanced UI */}
-        <div className="mb-12 overflow-x-auto">
-          <table className="w-full min-w-[600px]">
-            <thead>
-              <tr className="border-b-2 border-accent-deep">
-                <th className="px-4 py-4 text-left text-[10px] font-black text-accent-deep uppercase tracking-widest">Serial</th>
-                <th className="px-4 py-4 text-left text-[10px] font-black text-accent-deep uppercase tracking-widest">Item Description</th>
-                <th className="px-4 py-4 text-center text-[10px] font-black text-accent-deep uppercase tracking-widest">Qty</th>
-                <th className="px-4 py-4 text-right text-[10px] font-black text-accent-deep uppercase tracking-widest">Price</th>
-                <th className="px-4 py-4 text-right text-[10px] font-black text-accent-deep uppercase tracking-widest">Total</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {order.items.map((item: any, i: number) => (
-                <tr key={`${item.id || 'inv'}-${i}`} className="text-sm group hover:bg-surface/50 transition-colors">
-                  <td className="px-4 py-6 font-bold text-gray-400">{(i + 1).toString().padStart(2, '0')}</td>
-                  <td className="px-4 py-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-surface rounded-lg overflow-hidden border border-gray-50 flex-shrink-0 print:hidden">
-                        <img src={item.image} className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-accent-deep text-sm">{item.name}</p>
-                        <p className="text-[10px] text-gray-400 font-bold">UNIT: {item.unit || 'pcs'}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-6 text-center font-black text-gray-600">
-                    {item.cartQuantity}
-                  </td>
-                  <td className="px-4 py-6 text-right font-bold text-gray-500 whitespace-nowrap">৳{item.price}</td>
-                  <td className="px-4 py-6 text-right font-black text-accent-deep whitespace-nowrap">৳{item.price * item.cartQuantity}</td>
+        <div className="mb-8 sm:mb-12 overflow-x-auto -mx-4 sm:mx-0">
+          <div className="min-w-[600px] px-4 sm:px-0">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b-2 border-accent-deep text-xs">
+                  <th className="px-3 py-4 text-left font-black text-accent-deep uppercase tracking-widest w-16">No</th>
+                  <th className="px-3 py-4 text-left font-black text-accent-deep uppercase tracking-widest">Item Description</th>
+                  <th className="px-3 py-4 text-center font-black text-accent-deep uppercase tracking-widest w-16">Qty</th>
+                  <th className="px-3 py-4 text-right font-black text-accent-deep uppercase tracking-widest">Price</th>
+                  <th className="px-3 py-4 text-right font-black text-accent-deep uppercase tracking-widest">Total</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {order.items?.map((item: any, i: number) => (
+                  <tr key={`${item.id || 'inv'}-${i}`} className="text-sm group hover:bg-surface/50 transition-colors">
+                    <td className="px-3 py-5 font-bold text-gray-400">{(i + 1).toString().padStart(2, '0')}</td>
+                    <td className="px-3 py-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-surface rounded-lg overflow-hidden border border-gray-50 flex-shrink-0 print:hidden">
+                          <img 
+                            src={item.image} 
+                            className="w-full h-full object-cover" 
+                            onError={(e) => (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=Item'}
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-accent-deep text-sm line-clamp-1">{item.name}</p>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase">UNIT: {item.unit || 'pcs'}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-3 py-5 text-center font-black text-gray-600">
+                      {item.cartQuantity || 1}
+                    </td>
+                    <td className="px-3 py-5 text-right font-bold text-gray-500 whitespace-nowrap">৳{item.price}</td>
+                    <td className="px-3 py-5 text-right font-black text-accent-deep whitespace-nowrap">৳{item.price * (item.cartQuantity || 1)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Summary Footer */}
-        <div className="flex flex-col md:flex-row justify-between items-start gap-12">
-          <div className="flex-1 space-y-6">
-            <div className="p-6 bg-surface rounded-3xl border border-dashed border-gray-200">
-              <h4 className="text-[10px] font-black text-primary uppercase mb-3">Terms & Conditions</h4>
-              <ul className="text-[10px] text-gray-400 font-bold space-y-1 list-disc pl-4 leading-relaxed">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-8 sm:gap-12">
+          <div className="flex-1 space-y-6 w-full">
+            <div className="p-5 sm:p-6 bg-surface rounded-3xl border border-dashed border-gray-200">
+              <h4 className="text-[10px] font-black text-primary uppercase mb-3 px-1">Terms & Conditions</h4>
+              <ul className="text-[10px] text-gray-400 font-bold space-y-1.5 list-disc pl-5 leading-relaxed">
                 <li>Goods once sold are not returnable without valid reason.</li>
                 <li>Please keep this invoice for any warranty claims.</li>
                 <li>This is a computer-generated invoice, no signature is required.</li>
               </ul>
             </div>
-            <div className="flex gap-4">
-              <div className="w-20 h-20 opacity-10 print:opacity-30">
+            <div className="flex items-center gap-4 px-2">
+              <div className="w-16 h-16 opacity-10 print:opacity-30 shrink-0">
                 <svg viewBox="0 0 100 100" className="w-full h-full fill-accent-deep">
                   <rect x="10" y="10" width="80" height="80" rx="10" />
                   <path d="M25 25h10v10H25zM45 25h10v10H45zM65 25h10v10H65zM25 45h10v10H25zM25 65h10v10H25z" fill="white" />
                 </svg>
               </div>
-              <div>
-                <p className="text-[10px] font-black text-accent-deep uppercase">Scan to Verify</p>
-                <p className="text-[9px] text-gray-400 font-medium">Valid Aharon Official Document</p>
+              <div className="min-w-0">
+                <p className="text-[10px] font-black text-accent-deep uppercase truncate">Scan to Verify</p>
+                <p className="text-[9px] text-gray-400 font-medium truncate">Valid Aharon Official Document</p>
               </div>
             </div>
           </div>
@@ -1047,26 +1055,26 @@ function InvoiceModal({ order, onClose }: any) {
             </div>
             <div className="flex justify-between items-center px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-tighter">
               <span>Delivery Charge</span>
-              <span className="text-emerald-500">FREE</span>
+              <span className="text-emerald-500 font-black">FREE</span>
             </div>
             <div className="flex justify-between items-center px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-tighter border-b border-gray-100 pb-4">
               <span>Discount</span>
               <span className="text-rose-500">৳0</span>
             </div>
-            <div className="flex justify-between items-center p-6 bg-primary text-white rounded-3xl shadow-xl shadow-primary/20 print:bg-white print:text-black print:border-2 print:border-accent-deep print:shadow-none">
-              <span className="font-display font-black text-xl uppercase italic tracking-widest">NET TOTAL</span>
-              <span className="text-3xl font-display font-black tracking-tighter">৳{order.total}</span>
+            <div className="flex justify-between items-center p-5 sm:p-6 bg-primary text-white rounded-3xl shadow-xl shadow-primary/20 print:bg-white print:text-black print:border-2 print:border-accent-deep print:shadow-none">
+              <span className="font-display font-black text-lg sm:text-xl uppercase italic tracking-widest">NET TOTAL</span>
+              <span className="text-2xl sm:text-3xl font-display font-black tracking-tighter">৳{order.total}</span>
             </div>
             
-            <div className="pt-12 text-center">
-              <div className="w-40 h-0.5 bg-gray-100 mx-auto mb-2" />
+            <div className="pt-10 sm:pt-12 text-center">
+              <div className="w-32 sm:w-40 h-0.5 bg-gray-100 mx-auto mb-2" />
               <p className="text-[10px] font-black text-gray-400 uppercase">Authorized Signature</p>
             </div>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-16 py-4 border-t border-gray-50 text-center flex flex-wrap justify-center gap-8">
+        <div className="mt-12 sm:mt-16 py-4 border-t border-gray-50 text-center flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8">
           <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Official Invoice &copy; {new Date().getFullYear()} Aharon Shopping | MIRPUR DHAKA</p>
           <p className="text-[9px] font-black text-primary uppercase tracking-widest italic">A product of reocleanproperties@gmail.com</p>
         </div>
