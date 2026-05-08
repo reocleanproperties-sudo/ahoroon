@@ -14,6 +14,9 @@
         "description": { "type": "string" },
         "isFlashSale": { "type": "boolean" },
         "discount": { "type": "number" },
+        "unit": { "type": "string" },
+        "moq": { "type": "number" },
+        "step": { "type": "number" },
         "images": { "type": "array", "items": { "type": "string" } },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
@@ -50,7 +53,53 @@
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "items", "total", "status", "customer", "createdAt"]
+      "required": ["items", "total", "status", "customer", "createdAt"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Application user",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "editor", "viewer"] },
+        "permissions": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "role"]
+    },
+    "ManualInvoice": {
+      "title": "Manual Invoice",
+      "description": "Manually created invoice",
+      "type": "object",
+      "properties": {
+        "invoiceNo": { "type": "string" },
+        "customer": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "phone": { "type": "string" },
+            "address": { "type": "string" }
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "price": { "type": "number" },
+              "quantity": { "type": "number" },
+              "unit": { "type": "string" }
+            }
+          }
+        },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["invoiceNo", "customer", "items", "total", "createdAt"]
     }
   },
   "firestore": {
@@ -65,6 +114,14 @@
     "orders/{orderId}": {
       "schema": "Order",
       "description": "Collection of customer orders"
+    },
+    "users/{userId}": {
+      "schema": "User",
+      "description": "Collection of application users"
+    },
+    "manualInvoices/{invoiceId}": {
+      "schema": "ManualInvoice",
+      "description": "Collection of manual invoices"
     },
     "admins/{adminId}": {
       "schema": {

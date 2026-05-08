@@ -1,5 +1,5 @@
 import { db, auth } from './lib/firebase';
-import { collection, addDoc, getDocs, query, limit, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, limit, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { CATEGORIES, PRODUCTS } from './data';
 
 enum OperationType {
@@ -32,9 +32,10 @@ export const seedDatabase = async () => {
     if (categoriesSnap.empty) {
       console.log('Seeding categories...');
       for (const cat of CATEGORIES) {
-        await addDoc(collection(db, 'categories'), {
+        await setDoc(doc(db, 'categories', cat.id), {
           name: cat.name,
-          icon: cat.icon
+          icon: cat.icon,
+          createdAt: serverTimestamp()
         });
       }
     }

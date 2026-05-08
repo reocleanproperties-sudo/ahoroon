@@ -4,8 +4,8 @@ import { CartItem, Product } from '../types';
 interface CartContextType {
   cart: CartItem[];
   addToCart: (product: Product, quantity?: number, options?: { size?: string; color?: string }) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  removeFromCart: (productId: string, options?: { size?: string; color?: string }) => void;
+  updateQuantity: (productId: string, quantity: number, options?: { size?: string; color?: string }) => void;
   clearCart: () => void;
   cartCount: number;
   totalPrice: number;
@@ -34,16 +34,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const removeFromCart = (productId: string) => {
-    setCart(prev => prev.filter(item => item.id !== productId));
+  const removeFromCart = (productId: string, options?: { size?: string; color?: string }) => {
+    setCart(prev => prev.filter(item => 
+      !(item.id === productId && item.selectedSize === options?.size && item.selectedColor === options?.color)
+    ));
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number, options?: { size?: string; color?: string }) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      setCart(prev => prev.filter(item => 
+        !(item.id === productId && item.selectedSize === options?.size && item.selectedColor === options?.color)
+      ));
       return;
     }
-    setCart(prev => prev.map(item => item.id === productId ? { ...item, cartQuantity: quantity } : item));
+
+    const roundedQuantity = parseFloat(quantity.toFixed(3));
+
+    setCart(prev => prev.map(item => 
+      (item.id === productId && item.selectedSize === options?.size && item.selectedColor === options?.color)
+        ? { ...item, cartQuantity: roundedQuantity }
+        : item
+    ));
   };
 
   const clearCart = () => setCart([]);

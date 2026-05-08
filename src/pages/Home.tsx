@@ -35,7 +35,7 @@ export default function Home() {
   const flashSaleProducts = products.filter(p => p.isFlashSale);
 
   return (
-    <div className="space-y-12 pb-24 overflow-x-hidden">
+    <div className="space-y-12 pb-12 overflow-x-hidden">
       {/* Hero Banner (Reverted to previous style) */}
       <section className="px-4 md:px-8 max-w-7xl mx-auto pt-6">
         <div className="relative h-64 md:h-[450px] rounded-[2.5rem] overflow-hidden group shadow-2xl shadow-primary/10">
@@ -94,7 +94,7 @@ export default function Home() {
               { icon: Truck, title: "সরাসরি সোর্সিং", desc: "উৎপাদকের কাছ থেকে সরাসরি সংগ্রহ করা হয়।" },
               { icon: Award, title: "ঐতিহ্য রক্ষা", desc: "গ্রামীণ উদ্যোক্তাদের সাপোর্ট করি।" }
             ].map((item, i) => (
-              <div key={i} className="flex gap-4 items-start p-4 bg-surface rounded-2xl border border-gray-100">
+              <div key={`mission-${i}`} className="flex gap-4 items-start p-4 bg-surface rounded-2xl border border-gray-100">
                 <div className="p-2 bg-white rounded-xl shadow-sm text-primary">
                   <item.icon size={20} />
                 </div>
@@ -132,9 +132,9 @@ export default function Home() {
           </Link>
         </div>
         <div className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 h-32 items-center">
-          {categories.map((cat) => (
+          {categories.map((cat, idx) => (
             <Link
-              key={cat.id}
+              key={`${cat.id || 'cat'}-${idx}`}
               to={`/category/${cat.id}`}
               className="flex flex-col items-center gap-3 min-w-[100px] group"
             >
@@ -160,8 +160,8 @@ export default function Home() {
           </Link>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.slice(0, 4).map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {products.slice(0, 4).map((product, idx) => (
+            <ProductCard key={`${product.id || 'prod'}-${idx}`} product={product} />
           ))}
         </div>
       </section>
@@ -194,7 +194,7 @@ export default function Home() {
               { label: "পাবলিক ট্রাস্ট", val: "Trust", icon: Award }
             ].map((item, i) => (
               <motion.div
-                key={i}
+                key={`feature-${i}`}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 whileHover={{ 
@@ -226,7 +226,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="px-4 md:px-8 max-w-4xl mx-auto py-12 text-center space-y-8">
+      <section className="px-4 md:px-8 max-w-4xl mx-auto py-8 text-center space-y-6">
         <Quote className="mx-auto text-primary opacity-20" size={60} />
         <p className="text-xl md:text-2xl font-medium text-gray-700 italic leading-relaxed">
           “আহরোণ থেকে কেনা শুটকি একদম গ্রামের মতো খাঁটি—এখন আর বাইরে খুঁজতে হয় না। তাদের পণ্য মানেই আস্থার ঠিকানা।”

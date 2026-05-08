@@ -37,7 +37,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           <button 
             onClick={(e) => {
               e.preventDefault();
-              addToCart(product);
+              addToCart(product, product.moq || 1);
             }}
             className="absolute bottom-3 right-3 bg-white w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg transform translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 active:scale-90"
           >

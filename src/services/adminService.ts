@@ -11,7 +11,7 @@ import {
   getDoc
 } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { Product, Category } from '../types';
+import { Product, Category, AppUser, ManualInvoice } from '../types';
 
 export enum OperationType {
   CREATE = 'create',
@@ -119,6 +119,40 @@ export const adminService = {
     }
   },
 
+  async addCategory(category: Omit<Category, 'id'>) {
+    const path = 'categories';
+    try {
+      const docRef = await addDoc(collection(db, path), {
+        ...category,
+        createdAt: serverTimestamp(),
+      });
+      return docRef.id;
+    } catch (e) {
+      handleFirestoreError(e, OperationType.CREATE, path);
+    }
+  },
+
+  async updateCategory(id: string, category: Partial<Category>) {
+    const path = `categories/${id}`;
+    try {
+      await updateDoc(doc(db, 'categories', id), {
+        ...category,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, path);
+    }
+  },
+
+  async deleteCategory(id: string) {
+    const path = `categories/${id}`;
+    try {
+      await deleteDoc(doc(db, 'categories', id));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, path);
+    }
+  },
+
   // Orders
   async getOrders() {
     const path = 'orders';
@@ -140,6 +174,96 @@ export const adminService = {
       });
     } catch (e) {
       handleFirestoreError(e, OperationType.UPDATE, path);
+    }
+  },
+
+  // Users Management
+  async getUsers() {
+    const path = 'users';
+    try {
+      const q = query(collection(db, path), orderBy('createdAt', 'desc'));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AppUser));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.LIST, path);
+    }
+  },
+
+  async addUser(userData: Omit<AppUser, 'id'>) {
+    const path = 'users';
+    try {
+      const docRef = await addDoc(collection(db, path), {
+        ...userData,
+        createdAt: serverTimestamp(),
+      });
+      return docRef.id;
+    } catch (e) {
+      handleFirestoreError(e, OperationType.CREATE, path);
+    }
+  },
+
+  async updateUser(id: string, userData: Partial<AppUser>) {
+    const path = `users/${id}`;
+    try {
+      await updateDoc(doc(db, 'users', id), {
+        ...userData,
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, path);
+    }
+  },
+
+  async deleteUser(id: string) {
+    const path = `users/${id}`;
+    try {
+      await deleteDoc(doc(db, 'users', id));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, path);
+    }
+  },
+
+  // Manual Invoices
+  async getManualInvoices() {
+    const path = 'manualInvoices';
+    try {
+      const q = query(collection(db, path), orderBy('createdAt', 'desc'));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ManualInvoice));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.LIST, path);
+    }
+  },
+
+  async addManualInvoice(invoice: Omit<ManualInvoice, 'id'>) {
+    const path = 'manualInvoices';
+    try {
+      const docRef = await addDoc(collection(db, path), {
+        ...invoice,
+        createdAt: serverTimestamp(),
+      });
+      return docRef.id;
+    } catch (e) {
+      handleFirestoreError(e, OperationType.CREATE, path);
+    }
+  },
+
+  async updateManualInvoice(id: string, invoice: Partial<ManualInvoice>) {
+    const path = `manualInvoices/${id}`;
+    try {
+      await updateDoc(doc(db, 'manualInvoices', id), {
+        ...invoice,
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, path);
+    }
+  },
+
+  async deleteManualInvoice(id: string) {
+    const path = `manualInvoices/${id}`;
+    try {
+      await deleteDoc(doc(db, 'manualInvoices', id));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, path);
     }
   }
 };

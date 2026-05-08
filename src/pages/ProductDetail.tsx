@@ -1,12 +1,13 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Star, ChevronLeft, Heart, ShoppingBag, Truck, ShieldCheck } from 'lucide-react';
+import { Star, ChevronLeft, Heart, ShoppingBag, Truck, ShieldCheck, Minus, Plus } from 'lucide-react';
 import { PRODUCTS as STATIC_PRODUCTS } from '../data';
 import { useCart } from '../hooks/useCart';
 import { useState, useEffect } from 'react';
+import React from 'react';
 import { cn } from '../lib/utils';
 import { storeService } from '../services/storeService';
-import { Product } from '../types';
+import { Product, Category } from '../types';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -21,6 +22,53 @@ export default function ProductDetail() {
   const [activeImage, setActiveImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState('M');
   const [selectedColor, setSelectedColor] = useState('White');
+  const [quantity, setQuantity] = useState(1);
+
+  useEffect(() => {
+    if (product?.moq) {
+      setQuantity(product.moq);
+    }
+  }, [product]);
+
+  const increment = () => {
+    const step = product?.step || 1;
+    setQuantity(prev => {
+      const newVal = parseFloat((prev + step).toFixed(3));
+      return newVal;
+    });
+  };
+
+  const decrement = () => {
+    const step = product?.step || 1;
+    const moq = product?.moq || 1;
+    setQuantity(prev => {
+      const newVal = parseFloat((prev - step).toFixed(3));
+      return Math.max(moq, newVal);
+    });
+  };
+
+  const handleManualQuantity = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val === '') {
+      setQuantity(0);
+      return;
+    }
+    const num = parseFloat(val);
+    if (!isNaN(num)) {
+      setQuantity(num);
+    }
+  };
+
+  const validateAndAdd = () => {
+    if (!product) return;
+    const moq = product.moq || 1;
+    if (quantity < moq) {
+      alert(`Minimum order quantity is ${moq} ${product.unit || 'pcs'}`);
+      return;
+    }
+    addToCart(product, quantity, { size: selectedSize, color: selectedColor });
+    setQuantity(product.moq || 1); // Reset to MOQ
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -89,7 +137,7 @@ export default function ProductDetail() {
           <div className="flex flex-wrap gap-4 px-2">
             {allImages.map((img, idx) => (
               <button 
-                key={idx}
+                key={`thumb-${idx}`}
                 onClick={() => setActiveImage(idx)}
                 className={cn(
                   "w-16 h-16 rounded-2xl overflow-hidden border-2 transition-all",
@@ -173,14 +221,46 @@ export default function ProductDetail() {
       </div>
 
       {/* Sticky Bottom Actions */}
-      <div className="fixed bottom-20 md:bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-xl border-t border-gray-100 z-40 md:relative md:bg-transparent md:border-none md:p-8 lg:p-0 lg:max-w-7xl lg:mx-auto">
-        <div className="max-w-7xl mx-auto flex gap-4 md:max-w-none">
+      <div className="fixed bottom-20 md:bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-xl border-t border-gray-100 z-40 md:relative md:bg-transparent md:border-none md:p-8 lg:p-0 lg:max-w-7xl lg:mx-auto lg:mt-8">
+        <div className="max-w-7xl mx-auto flex items-center gap-4 md:max-w-none">
+          {/* Quantity Selector */}
+          <div className="flex flex-col gap-1">
+            {product?.moq && (
+              <span className="text-[10px] font-bold text-gray-400 uppercase ml-2">Min: {product.moq} {product.unit}</span>
+            )}
+            <div className="flex items-center bg-gray-50 rounded-2xl p-1 border border-gray-100 md:bg-white">
+              <button 
+                onClick={decrement}
+                className="p-2 hover:bg-white md:hover:bg-gray-50 rounded-xl transition-colors text-gray-500 hover:text-primary"
+              >
+                <Minus size={18} />
+              </button>
+              <div className="flex items-center">
+                <input 
+                  type="number" 
+                  step={product?.step || 1}
+                  min={product?.moq || 1}
+                  value={quantity || ''}
+                  onChange={handleManualQuantity}
+                  className="w-16 md:w-20 text-center font-bold text-lg bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <span className="text-xs font-bold text-gray-400 mr-2">{product?.unit || 'pcs'}</span>
+              </div>
+              <button 
+                onClick={increment}
+                className="p-2 hover:bg-white md:hover:bg-gray-50 rounded-xl transition-colors text-gray-500 hover:text-primary"
+              >
+                <Plus size={18} />
+              </button>
+            </div>
+          </div>
+
           <button className="hidden md:flex p-4 rounded-2xl border border-gray-100 text-gray-400 hover:text-primary transition-colors">
             <Heart size={24} />
           </button>
           <motion.button 
             whileTap={{ scale: 0.95 }}
-            onClick={() => addToCart(product, 1, { size: selectedSize, color: selectedColor })}
+            onClick={validateAndAdd}
             className="flex-1 bg-primary text-white rounded-[1.5rem] py-4 font-bold flex items-center justify-center gap-2 shadow-xl shadow-primary/20 hover:brightness-110 transition-all"
           >
             <ShoppingBag size={20} />

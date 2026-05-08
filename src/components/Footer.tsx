@@ -3,7 +3,7 @@ import { Mail, Phone, MapPin, Facebook, Instagram, Twitter } from 'lucide-react'
 
 export const Footer = () => {
   return (
-    <footer className="bg-white border-t border-gray-100 pt-16 pb-8 px-4 md:px-8">
+    <footer className="bg-white border-t border-gray-100 pt-10 pb-8 px-4 md:px-8">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
         <div className="space-y-6">
           <Link to="/" className="logo-text text-3xl">

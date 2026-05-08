@@ -33,7 +33,7 @@ export default function Profile() {
           { label: 'Saved', val: '45' },
           { label: 'Coupons', val: '3' },
         ].map((stat, i) => (
-          <div key={i} className="glass-card p-4 text-center">
+          <div key={`stat-${i}`} className="glass-card p-4 text-center">
             <p className="text-2xl font-bold text-primary">{stat.val}</p>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{stat.label}</p>
           </div>
@@ -46,7 +46,7 @@ export default function Profile() {
         <div className="space-y-2">
           {menuItems.map((item, idx) => (
             <motion.button
-              key={idx}
+              key={`menu-${idx}`}
               whileHover={{ x: 4 }}
               className="w-full glass-card p-5 flex items-center justify-between group transition-all hover:border-primary/20"
             >

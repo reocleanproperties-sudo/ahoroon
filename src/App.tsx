@@ -20,7 +20,7 @@ export default function App() {
       <CartProvider>
         <div className="min-h-screen border-none bg-surface pb-20 md:pb-0 font-sans selection:bg-primary selection:text-white">
           <TopNav />
-          <main className="flex-1 pb-10">
+          <main className="flex-1">
             <AnimatePresence mode="wait">
               <Routes>
                 <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />

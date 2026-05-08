@@ -33,7 +33,7 @@ export default function Categories() {
       <div className="grid gap-4">
         {categories.map((cat, idx) => (
           <motion.div
-            key={cat.id}
+            key={`${cat.id || 'cat'}-${idx}`}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: idx * 0.05 }}

@@ -72,9 +72,9 @@ export const SearchOverlay = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
                 <div className="space-y-4">
                   <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Search Results</h3>
                   <div className="grid gap-2">
-                    {results.map(product => (
+                    {results.map((product, idx) => (
                       <Link 
-                        key={product.id} 
+                        key={`${product.id}-${idx}`} 
                         to={`/product/${product.id}`}
                         onClick={onClose}
                         className="flex items-center justify-between p-4 bg-gray-50 rounded-[1.5rem] hover:bg-primary/5 group transition-all"
@@ -113,9 +113,9 @@ export const SearchOverlay = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
                 <div className="space-y-6">
                   <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Popular Categories</h3>
                   <div className="flex flex-wrap gap-2">
-                    {categories.map(cat => (
+                    {categories.map((cat, idx) => (
                       <button 
-                        key={cat.id}
+                        key={`${cat.id}-${idx}`}
                         onClick={() => setQuery(cat.name)}
                         className="px-5 py-3 bg-gray-50 rounded-full text-sm font-bold text-gray-600 hover:bg-primary/10 hover:text-primary transition-all"
                       >
