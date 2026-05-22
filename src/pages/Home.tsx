@@ -653,7 +653,7 @@ export default function Home() {
                   <CategoryIcon name={cat.icon} size={36} strokeWidth={1.5} />
                 </div>
               </div>
-              <span className="text-xs font-black uppercase tracking-widest text-slate-400 group-hover:text-emerald-600 transition-colors text-center font-mono">
+              <span className="text-xs font-black uppercase tracking-widest text-black group-hover:text-emerald-600 transition-colors text-center font-mono">
                 {cat.name}
               </span>
             </Link>
