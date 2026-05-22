@@ -196,7 +196,8 @@ service cloud.firestore {
     // Site Settings
     match /settings/{settingId} {
       function isValidSetting(data) {
-        return data.get('logoUrl', '') is string && data.get('logoUrl', '').size() > 0 && data.get('logoUrl', '').size() <= 1500000;
+        return data.get('logoUrl', '') is string && data.get('logoUrl', '').size() <= 3000000 &&
+               data.get('footerLogoUrl', '') is string && data.get('footerLogoUrl', '').size() <= 3000000;
       }
       allow read: if true;
       allow create, update: if isAdmin() && isValidSetting(incoming());

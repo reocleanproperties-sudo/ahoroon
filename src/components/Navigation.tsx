@@ -51,7 +51,16 @@ export const TopNav = () => {
       })
       .catch(err => console.error("Error loading settings:", err));
 
-    return unsub;
+    const handleLogoUpdate = () => {
+      const newLogo = localStorage.getItem('siteLogo');
+      if (newLogo) setSiteLogo(newLogo);
+    };
+    window.addEventListener('siteLogoUpdated', handleLogoUpdate);
+
+    return () => {
+      unsub();
+      window.removeEventListener('siteLogoUpdated', handleLogoUpdate);
+    };
   }, []);
 
   return (

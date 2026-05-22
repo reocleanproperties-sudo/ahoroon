@@ -4,43 +4,63 @@ import { useState, useEffect } from 'react';
 import { adminService } from '../services/adminService';
 
 export const Footer = () => {
-  const [siteLogo, setSiteLogo] = useState<string>(
-    localStorage.getItem('siteLogo') || "/src/assets/images/ahoron_logo_1779462502413.png"
+  const [footerLogo, setFooterLogo] = useState<string>(
+    localStorage.getItem('siteFooterLogo') || localStorage.getItem('siteLogo') || "/src/assets/images/ahoron_logo_1779462502413.png"
   );
 
   useEffect(() => {
     adminService.getSettings()
       .then(settings => {
-        if (settings && settings.logoUrl) {
-          setSiteLogo(settings.logoUrl);
+        if (settings && settings.footerLogoUrl) {
+          setFooterLogo(settings.footerLogoUrl);
+        } else if (settings && settings.logoUrl) {
+          setFooterLogo(settings.logoUrl);
         }
       })
       .catch(err => console.error("Error loading settings:", err));
+
+    const handleLogoUpdate = () => {
+      const siteFooterLogo = localStorage.getItem('siteFooterLogo');
+      const siteLogo = localStorage.getItem('siteLogo');
+      if (siteFooterLogo) {
+        setFooterLogo(siteFooterLogo);
+      } else if (siteLogo) {
+        setFooterLogo(siteLogo);
+      }
+    };
+    
+    window.addEventListener('siteLogoUpdated', handleLogoUpdate);
+    window.addEventListener('siteFooterLogoUpdated', handleLogoUpdate);
+
+    return () => {
+      window.removeEventListener('siteLogoUpdated', handleLogoUpdate);
+      window.removeEventListener('siteFooterLogoUpdated', handleLogoUpdate);
+    };
   }, []);
   return (
     <footer className="bg-white border-t border-gray-100 pt-10 pb-8 px-4 md:px-8">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-        <div className="space-y-6">
+        <div className="flex flex-col">
           <Link to="/" className="inline-block">
             <img 
-              src={siteLogo} 
+              src={footerLogo} 
               alt="আহরোণ" 
-              className="h-12 w-auto object-contain transition-transform duration-300 hover:scale-105"
+              className="h-[150px] w-[500px] max-w-full object-contain -mt-[1px] mb-[23px] pb-[3px]"
               referrerPolicy="no-referrer"
             />
           </Link>
-          <p className="text-gray-500 text-sm leading-relaxed">
+          <p className="text-gray-500 text-sm leading-relaxed mt-[-29px] mb-6 pl-0 ml-0">
             আহরোণ—বাংলার ঐতিহ্যবাহী খাবারকে ভেজালমুক্তভাবে আপনার কাছে পৌঁছে দেওয়ার একটি বিশ্বস্ত নাম।
           </p>
           <div className="flex gap-4">
-            <a href="#" className="p-2 bg-gray-50 rounded-xl text-gray-400 hover:text-primary transition-colors">
-              <Facebook size={20} />
+            <a href="#" className="p-3 bg-[#1877F2] rounded-xl text-white transition-all transform hover:-translate-y-1 hover:brightness-110 shadow-[0_4px_0_0_#0d5ebd,0_10px_10px_-5px_rgba(0,0,0,0.3)] active:translate-y-1 active:shadow-[0_0px_0_0_#0d5ebd,0_0px_0px_-5px_rgba(0,0,0,0.3)] flex items-center justify-center">
+              <Facebook size={22} fill="currentColor" strokeWidth={0} />
             </a>
-            <a href="#" className="p-2 bg-gray-50 rounded-xl text-gray-400 hover:text-primary transition-colors">
-              <Instagram size={20} />
+            <a href="#" className="p-3 bg-gradient-to-tr from-[#fce043] via-[#e6683c] to-[#bc1888] rounded-xl text-white transition-all transform hover:-translate-y-1 hover:brightness-110 shadow-[0_4px_0_0_#9b1471,0_10px_10px_-5px_rgba(0,0,0,0.3)] active:translate-y-1 active:shadow-[0_0px_0_0_#9b1471,0_0px_0px_-5px_rgba(0,0,0,0.3)] flex items-center justify-center">
+              <Instagram size={22} strokeWidth={2.5} />
             </a>
-            <a href="#" className="p-2 bg-gray-50 rounded-xl text-gray-400 hover:text-primary transition-colors">
-              <Twitter size={20} />
+            <a href="#" className="p-3 bg-black rounded-xl text-white transition-all transform hover:-translate-y-1 hover:brightness-110 shadow-[0_4px_0_0_#333,0_10px_10px_-5px_rgba(0,0,0,0.3)] active:translate-y-1 active:shadow-[0_0px_0_0_#333,0_0px_0px_-5px_rgba(0,0,0,0.3)] flex items-center justify-center">
+              <Twitter size={22} fill="currentColor" strokeWidth={0} />
             </a>
           </div>
         </div>

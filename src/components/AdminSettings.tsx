@@ -5,6 +5,7 @@ import { compressImage } from '../lib/imageUtils';
 
 export default function AdminSettings() {
   const [logoUrl, setLogoUrl] = useState('');
+  const [footerLogoUrl, setFooterLogoUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -19,6 +20,9 @@ export default function AdminSettings() {
       if (settings && settings.logoUrl) {
         setLogoUrl(settings.logoUrl);
       }
+      if (settings && settings.footerLogoUrl) {
+        setFooterLogoUrl(settings.footerLogoUrl);
+      }
     } catch (error) {
       console.error('Error loading settings:', error);
     } finally {
@@ -26,15 +30,30 @@ export default function AdminSettings() {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, isFooter: boolean = false) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
-      const base64Img = await compressImage(file, 800);
-      setLogoUrl(base64Img);
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64String = event.target?.result as string;
+        try {
+          const compressed = await compressImage(base64String, 400, 400, 0.8);
+          if (isFooter) {
+            setFooterLogoUrl(compressed);
+          } else {
+            setLogoUrl(compressed);
+          }
+        } catch (err) {
+          console.error("Compression error:", err);
+          alert("Failed to compress image");
+        }
+      };
+      reader.onerror = () => alert("Failed to read file");
+      reader.readAsDataURL(file);
     } catch (err) {
-      console.error('Failed to compress image:', err);
+      console.error('Failed to process image:', err);
       alert('Failed to process image');
     }
   };
@@ -42,7 +61,7 @@ export default function AdminSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await adminService.updateSettings({ logoUrl });
+      await adminService.updateSettings({ logoUrl, footerLogoUrl });
       alert('Settings saved successfully!');
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -81,7 +100,7 @@ export default function AdminSettings() {
         <h2 className="text-lg font-semibold text-gray-900 mb-6">Branding</h2>
         
         <div className="space-y-4">
-          <label className="block text-sm font-medium text-gray-700">Replace Website Logo</label>
+          <label className="block text-sm font-medium text-gray-700">Main Website Logo</label>
           <div className="flex flex-col sm:flex-row gap-6 items-start">
             <div className="w-48 h-32 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
               {logoUrl ? (
@@ -101,7 +120,7 @@ export default function AdminSettings() {
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
-                  onChange={handleImageUpload}
+                  onChange={(e) => handleImageUpload(e, false)}
                   className="hidden"
                 />
               </label>
@@ -115,6 +134,46 @@ export default function AdminSettings() {
                   className="text-red-500 text-sm hover:text-red-600 font-medium"
                 >
                   Remove Logo
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4 pt-6 border-t border-gray-100 mt-6">
+          <label className="block text-sm font-medium text-gray-700">Footer Logo</label>
+          <div className="flex flex-col sm:flex-row gap-6 items-start">
+            <div className="w-48 h-32 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
+              {footerLogoUrl ? (
+                <img src={footerLogoUrl} alt="Footer Logo Preview" className="max-w-full max-h-full object-contain p-2" />
+              ) : (
+                <div className="text-gray-400 text-sm flex flex-col items-center">
+                  <Upload size={24} className="mb-2" />
+                  No Logo
+                </div>
+              )}
+            </div>
+            
+            <div className="flex-1 space-y-3">
+              <label className="inline-flex items-center gap-2 bg-surface hover:bg-gray-100 border border-gray-200 text-gray-700 px-4 py-2 rounded-xl transition-all cursor-pointer font-medium">
+                <Upload size={18} />
+                Upload Footer Logo
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) => handleImageUpload(e, true)}
+                  className="hidden"
+                />
+              </label>
+              <p className="text-sm text-gray-500 leading-relaxed">
+                Optional separate logo for the footer. Recommended size: 400x120 pixels.
+              </p>
+              {footerLogoUrl && (
+                <button 
+                  onClick={() => setFooterLogoUrl('')}
+                  className="text-red-500 text-sm hover:text-red-600 font-medium"
+                >
+                  Remove Footer Logo
                 </button>
               )}
             </div>

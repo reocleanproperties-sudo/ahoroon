@@ -97,7 +97,17 @@ export default function Admin() {
       }
       setLoading(false);
     });
-    return () => unsubscribe();
+
+    const handleLogoUpdate = () => {
+      const newLogo = localStorage.getItem('siteLogo');
+      if (newLogo) setSiteLogo(newLogo);
+    };
+    window.addEventListener('siteLogoUpdated', handleLogoUpdate);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('siteLogoUpdated', handleLogoUpdate);
+    };
   }, []);
 
   const loadData = async () => {
@@ -213,7 +223,7 @@ export default function Admin() {
           />
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 pt-4">
+        <nav className="flex-1 px-4 space-y-2 pt-4 overflow-y-auto pb-6">
           <SidebarItem 
             icon={LayoutDashboard} 
             label="Dashboard" 
@@ -264,13 +274,13 @@ export default function Admin() {
           />
           <SidebarItem 
             icon={Newspaper} 
-            label="Newspaper (মিডিয়া)" 
+            label="Newspaper (Press)" 
             active={activeTab === 'press'} 
             onClick={() => setActiveTab('press')} 
           />
           <SidebarItem 
             icon={SettingsIcon} 
-            label="Settings" 
+            label="Site Settings (Logo)" 
             active={activeTab === 'settings'} 
             onClick={() => setActiveTab('settings')} 
           />
@@ -371,6 +381,7 @@ export default function Admin() {
         {activeTab === 'press' && (
           <AdminPress />
         )}
+
         {activeTab === 'settings' && (
           <AdminSettings />
         )}

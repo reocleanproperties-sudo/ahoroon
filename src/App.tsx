@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { CartProvider } from './hooks/useCart';
 import { LoyaltyProvider } from './context/LoyaltyContext';
 import { TopNav, BottomNav } from './components/Navigation';
@@ -16,34 +16,47 @@ import OrderTracking from './pages/OrderTracking';
 import Admin from './pages/Admin';
 import { motion, AnimatePresence } from 'motion/react';
 
+function AppContent() {
+  const location = useLocation();
+  const isAdminPath = location.pathname.startsWith('/admin');
+
+  return (
+    <div className="min-h-screen border-none bg-surface pb-20 md:pb-0 font-sans selection:bg-primary selection:text-white flex flex-col">
+      {!isAdminPath && <TopNav />}
+      <main className="flex-1 flex flex-col">
+        <AnimatePresence mode="wait">
+          <Routes>
+            <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
+            <Route path="/product/:id" element={<PageWrapper><ProductDetail /></PageWrapper>} />
+            <Route path="/category/:categoryId" element={<PageWrapper><ProductListing /></PageWrapper>} />
+            <Route path="/cart" element={<PageWrapper><Cart /></PageWrapper>} />
+            <Route path="/checkout" element={<PageWrapper><Checkout /></PageWrapper>} />
+            <Route path="/order-tracking/:orderId" element={<PageWrapper><OrderTracking /></PageWrapper>} />
+            <Route path="/categories" element={<PageWrapper><Categories /></PageWrapper>} />
+            <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
+            <Route path="/admin" element={<PageWrapper><Admin /></PageWrapper>} />
+            <Route path="/login" element={<Navigate to="/admin" replace />} />
+            <Route path="*" element={<PageWrapper><Home /></PageWrapper>} />
+          </Routes>
+        </AnimatePresence>
+      </main>
+      {!isAdminPath && (
+        <>
+          <Footer />
+          <BottomNav />
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <Router>
       <ScrollToTop />
       <CartProvider>
         <LoyaltyProvider>
-          <div className="min-h-screen border-none bg-surface pb-20 md:pb-0 font-sans selection:bg-primary selection:text-white">
-            <TopNav />
-            <main className="flex-1">
-              <AnimatePresence mode="wait">
-                <Routes>
-                  <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
-                  <Route path="/product/:id" element={<PageWrapper><ProductDetail /></PageWrapper>} />
-                  <Route path="/category/:categoryId" element={<PageWrapper><ProductListing /></PageWrapper>} />
-                  <Route path="/cart" element={<PageWrapper><Cart /></PageWrapper>} />
-                  <Route path="/checkout" element={<PageWrapper><Checkout /></PageWrapper>} />
-                  <Route path="/order-tracking/:orderId" element={<PageWrapper><OrderTracking /></PageWrapper>} />
-                  <Route path="/categories" element={<PageWrapper><Categories /></PageWrapper>} />
-                  <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
-                  <Route path="/admin" element={<PageWrapper><Admin /></PageWrapper>} />
-                  <Route path="/login" element={<Navigate to="/admin" replace />} />
-                  <Route path="*" element={<PageWrapper><Home /></PageWrapper>} />
-                </Routes>
-              </AnimatePresence>
-            </main>
-            <Footer />
-            <BottomNav />
-          </div>
+          <AppContent />
         </LoyaltyProvider>
       </CartProvider>
     </Router>

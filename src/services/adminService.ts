@@ -412,9 +412,12 @@ export const adminService = {
       const docRef = doc(db, 'settings', 'general');
       const snap = await getDoc(docRef);
       if (snap.exists()) {
-        const data = snap.data() as { logoUrl: string };
+        const data = snap.data() as { logoUrl?: string; footerLogoUrl?: string };
         if (data && data.logoUrl) {
           localStorage.setItem('siteLogo', data.logoUrl);
+        }
+        if (data && data.footerLogoUrl) {
+          localStorage.setItem('siteFooterLogo', data.footerLogoUrl);
         }
         return data;
       }
@@ -424,16 +427,23 @@ export const adminService = {
     }
   },
 
-  async updateSettings(settings: { logoUrl: string }) {
+  async updateSettings(settings: { logoUrl?: string; footerLogoUrl?: string }) {
     const path = 'settings/general';
     try {
       const docRef = doc(db, 'settings', 'general');
+      // Merge with existing so we don't accidentally overwrite if only one is updated
       await setDoc(docRef, {
         ...settings,
         updatedAt: serverTimestamp()
-      });
+      }, { merge: true });
+      
       if (settings.logoUrl) {
         localStorage.setItem('siteLogo', settings.logoUrl);
+        window.dispatchEvent(new Event('siteLogoUpdated'));
+      }
+      if (settings.footerLogoUrl) {
+        localStorage.setItem('siteFooterLogo', settings.footerLogoUrl);
+        window.dispatchEvent(new Event('siteFooterLogoUpdated'));
       }
     } catch (e) {
       handleFirestoreError(e, OperationType.WRITE, path);
