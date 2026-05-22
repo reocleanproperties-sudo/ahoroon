@@ -33,7 +33,7 @@ export default function Profile() {
           { label: 'Saved', val: '45' },
           { label: 'Coupons', val: '3' },
         ].map((stat, i) => (
-          <div key={`stat-${i}`} className="glass-card p-4 text-center">
+          <div key={`profile-stat-${stat.label}-${i}`} className="glass-card p-4 text-center">
             <p className="text-2xl font-bold text-primary">{stat.val}</p>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{stat.label}</p>
           </div>

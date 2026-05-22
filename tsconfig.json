@@ -22,5 +22,10 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
-  }
+  },
+  "exclude": [
+    "next-admin",
+    "node_modules",
+    "dist"
+  ]
 }

@@ -74,7 +74,7 @@ export const SearchOverlay = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
                   <div className="grid gap-2">
                     {results.map((product, idx) => (
                       <Link 
-                        key={`${product.id}-${idx}`} 
+                        key={`search-res-${product.id}-${idx}`} 
                         to={`/product/${product.id}`}
                         onClick={onClose}
                         className="flex items-center justify-between p-4 bg-gray-50 rounded-[1.5rem] hover:bg-primary/5 group transition-all"
@@ -115,7 +115,7 @@ export const SearchOverlay = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
                   <div className="flex flex-wrap gap-2">
                     {categories.map((cat, idx) => (
                       <button 
-                        key={`${cat.id}-${idx}`}
+                        key={`search-pop-cat-${cat.id}-${idx}`}
                         onClick={() => setQuery(cat.name)}
                         className="px-5 py-3 bg-gray-50 rounded-full text-sm font-bold text-gray-600 hover:bg-primary/10 hover:text-primary transition-all"
                       >

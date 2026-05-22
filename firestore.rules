@@ -79,7 +79,8 @@ service cloud.firestore {
       }
 
       allow create: if isValidOrder(incoming());
-      allow read: if isSignedIn() && (resource.data.get('userId', '') == request.auth.uid || isAdmin());
+      allow get: if true; // Allow anyone with an order ID to track it
+      allow list: if isAdmin();
       allow update: if isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) &&
                     incoming().get('status', '') in ['pending', 'processing', 'shipped', 'delivered', 'cancelled'] &&
                     incoming().get('updatedAt', request.time) == request.time;
@@ -95,14 +96,24 @@ service cloud.firestore {
     // Users
     match /users/{userId} {
       function isValidUser(data) {
-        return data.get('email', '') is string && data.email.size() > 0 &&
+        return data.get('email', '') is string && data.get('email', '').size() > 0 &&
                data.get('role', 'viewer') in ['admin', 'editor', 'viewer'] &&
-               data.get('permissions', []) is list;
+               data.get('points', 0) is number &&
+               data.get('tier', 'Bronze') in ['Bronze', 'Silver', 'Gold', 'Platinum'] &&
+               data.get('lifetimeSpent', 0) is number;
       }
-      allow get: if isAdmin();
+      
+      function isOwner(uid) {
+        return isSignedIn() && request.auth.uid == uid;
+      }
+
+      allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
-      allow create: if isAdmin() && isValidUser(incoming()) && incoming().get('createdAt', request.time) == request.time;
-      allow update: if isAdmin() && isValidUser(incoming());
+      allow create: if (isOwner(userId) || isAdmin()) && isValidUser(incoming()) && incoming().get('createdAt', request.time) == request.time;
+      allow update: if (isOwner(userId) || isAdmin()) && 
+                    isValidUser(incoming()) && 
+                    // Prevent non-admins from changing their role
+                    (isAdmin() || incoming().get('role', 'viewer') == existing().get('role', 'viewer'));
       allow delete: if isAdmin();
     }
 
@@ -118,6 +129,77 @@ service cloud.firestore {
       allow list: if isAdmin();
       allow create: if isAdmin() && isValidManualInvoice(incoming()) && incoming().get('createdAt', request.time) == request.time;
       allow update: if isAdmin() && isValidManualInvoice(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // Public Activity (for Social Proof)
+    match /public_activity/{activityId} {
+      allow read: if true;
+      allow create: if isSignedIn() || true; // Allow system-triggered (anonymous checkout also triggers this)
+    }
+
+    // Customer Gallery
+    match /customerGallery/{galleryId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update: if (isSignedIn() && existing().userId == request.auth.uid) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Sliders
+    match /sliders/{sliderId} {
+      function isValidSlider(data) {
+        return data.get('imageUrl', '') is string && data.get('imageUrl', '').size() > 0 &&
+               data.get('title', '') is string &&
+               data.get('description', '') is string &&
+               data.get('link', '') is string &&
+               data.get('order', 0) is number;
+      }
+      allow read: if true;
+      allow create: if isAdmin() && isValidSlider(incoming());
+      allow update: if isAdmin() && isValidSlider(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // Producers
+    match /producers/{producerId} {
+      function isValidProducer(data) {
+        return data.get('name', '') is string && data.get('name', '').size() > 0 && data.get('name', '').size() <= 200 &&
+               data.get('role', '') is string && data.get('role', '').size() > 0 && data.get('role', '').size() <= 200 &&
+               data.get('img', '') is string && data.get('img', '').size() > 0 && data.get('img', '').size() <= 1000000 &&
+               data.get('story', '') is string && data.get('story', '').size() > 0 && data.get('story', '').size() <= 10000 &&
+               data.get('order', 0) is number;
+      }
+      allow read: if true;
+      allow create: if isAdmin() && isValidProducer(incoming());
+      allow update: if isAdmin() && isValidProducer(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // Press Coverages
+    match /press/{pressId} {
+      function isValidPress(data) {
+        return data.get('source', '') is string && data.get('source', '').size() > 0 && data.get('source', '').size() <= 200 &&
+               data.get('title', '') is string && data.get('title', '').size() > 0 && data.get('title', '').size() <= 400 &&
+               data.get('excerpt', '') is string && data.get('excerpt', '').size() > 0 && data.get('excerpt', '').size() <= 4000 &&
+               data.get('img', '') is string && data.get('img', '').size() > 0 && data.get('img', '').size() <= 1000000 &&
+               data.get('link', '') is string && data.get('link', '').size() <= 2000 &&
+               data.get('date', '') is string && data.get('date', '').size() <= 100 &&
+               data.get('order', 0) is number;
+      }
+      allow read: if true;
+      allow create: if isAdmin() && isValidPress(incoming());
+      allow update: if isAdmin() && isValidPress(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // Site Settings
+    match /settings/{settingId} {
+      function isValidSetting(data) {
+        return data.get('logoUrl', '') is string && data.get('logoUrl', '').size() > 0 && data.get('logoUrl', '').size() <= 1500000;
+      }
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidSetting(incoming());
       allow delete: if isAdmin();
     }
   }

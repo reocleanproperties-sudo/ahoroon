@@ -20,7 +20,10 @@ export const PRODUCTS: Product[] = [
     description: 'প্রাকৃতিকভাবে শুকানো, কোন রাসায়নিক ছাড়া তৈরি—আসল স্বাদের লইট্টা শুটকি। সরাসরি চট্টগ্রামের উপকূল থেকে সংগৃহীত।',
     isFlashSale: true,
     discount: 10,
-    images: ['https://images.unsplash.com/photo-1626132646529-5003375a954e?w=800&q=80']
+    images: ['https://images.unsplash.com/photo-1626132646529-5003375a954e?w=800&q=80'],
+    origin: 'উপকূলীয় চট্টগ্রাম',
+    harvestDate: '১২ এপ্রিল, ২০২৪',
+    isVerified: true
   },
   {
     id: '2',
@@ -31,7 +34,10 @@ export const PRODUCTS: Product[] = [
     image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&q=80',
     category: 'spices',
     description: 'বিখ্যাত চট্টগ্রামের মেজবানি রান্নার আসল স্বাদ পেতে আমাদের স্পেশাল গোপন মশলা। ১০০% প্রাকৃতিক উপাদান।',
-    images: ['https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&q=80']
+    images: ['https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&q=80'],
+    origin: 'চাক্তাই, চট্টগ্রাম',
+    harvestDate: '০৫ মে, ২০২৪',
+    isVerified: true
   },
   {
     id: '3',
@@ -44,7 +50,10 @@ export const PRODUCTS: Product[] = [
     description: 'রাঙ্গামাটির গভীর জঙ্গল থেকে সংগৃহীত খাঁটি মধু। স্বাদে ও গুণে অনন্য, ভেজালমুক্ত নিশ্চয়তা।',
     isFlashSale: true,
     discount: 5,
-    images: ['https://images.unsplash.com/photo-1587049352846-4a222e783137?w=800&q=80']
+    images: ['https://images.unsplash.com/photo-1587049352846-4a222e783137?w=800&q=80'],
+    origin: 'সাজেক ভ্যালি, রাঙ্গামাটি',
+    harvestDate: '২২ মার্চ, ২০২৪',
+    isVerified: true
   },
   {
     id: '4',

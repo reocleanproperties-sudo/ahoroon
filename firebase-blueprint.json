@@ -64,9 +64,31 @@
         "email": { "type": "string" },
         "role": { "type": "string", "enum": ["admin", "editor", "viewer"] },
         "permissions": { "type": "array", "items": { "type": "string" } },
+        "points": { "type": "number" },
+        "tier": { "type": "string", "enum": ["Bronze", "Silver", "Gold", "Platinum"] },
+        "lifetimeSpent": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["email", "role"]
+    },
+    "CustomerGallery": {
+      "title": "Customer Gallery",
+      "description": "User shared photos and videos",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "type": { "type": "string", "enum": ["image", "video"] },
+        "url": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "productId": { "type": "string" },
+        "productName": { "type": "string" },
+        "comment": { "type": "string" },
+        "likes": { "type": "number" },
+        "isApproved": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["type", "url", "createdAt"]
     },
     "ManualInvoice": {
       "title": "Manual Invoice",
@@ -100,9 +122,58 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["invoiceNo", "customer", "items", "total", "createdAt"]
+    },
+    "Producer": {
+      "title": "Producer",
+      "description": "Producer profile card",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "img": { "type": "string" },
+        "story": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["name", "role", "img", "story", "order"]
+    },
+    "PressCoverage": {
+      "title": "PressCoverage",
+      "description": "Newspaper or media mention card",
+      "type": "object",
+      "properties": {
+        "source": { "type": "string" },
+        "title": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "img": { "type": "string" },
+        "link": { "type": "string" },
+        "date": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["source", "title", "excerpt", "img", "link", "date", "order"]
+    },
+    "Setting": {
+      "title": "Setting",
+      "description": "Store site settings like custom logo",
+      "type": "object",
+      "properties": {
+        "logoUrl": { "type": "string" }
+      },
+      "required": ["logoUrl"]
     }
   },
   "firestore": {
+    "settings/{settingId}": {
+      "schema": "Setting",
+      "description": "Collection of store configuration settings"
+    },
+    "press/{pressId}": {
+      "schema": "PressCoverage",
+      "description": "Collection of newspaper coverage"
+    },
+    "producers/{producerId}": {
+      "schema": "Producer",
+      "description": "Collection of producers shown on the home page"
+    },
     "products/{productId}": {
       "schema": "Product",
       "description": "Collection of products"
@@ -122,6 +193,10 @@
     "manualInvoices/{invoiceId}": {
       "schema": "ManualInvoice",
       "description": "Collection of manual invoices"
+    },
+    "customerGallery/{galleryId}": {
+      "schema": "CustomerGallery",
+      "description": "Collection of user shared media"
     },
     "admins/{adminId}": {
       "schema": {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useReactToPrint } from 'react-to-print';
+// @ts-ignore
+import html2pdf from 'html2pdf.js';
 import { 
   LayoutDashboard, 
   Package, 
@@ -9,6 +10,7 @@ import {
   Plus, 
   Search, 
   MoreVertical, 
+  Settings as SettingsIcon,
   LogOut, 
   Save, 
   X,
@@ -20,6 +22,7 @@ import {
   AlertCircle,
   Image as ImageIcon,
   Sparkles,
+  Newspaper,
   LayoutGrid,
   Eye,
   FileText,
@@ -40,8 +43,12 @@ import { Product, Category, AppUser, ManualInvoice } from '../types';
 import { cn } from '../lib/utils';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { compressImage } from '../lib/imageUtils';
+import { AdminSliders } from '../components/AdminSliders';
+import { AdminProducers } from '../components/AdminProducers';
+import { AdminPress } from '../components/AdminPress';
+import AdminSettings from '../components/AdminSettings';
 
-type Tab = 'dashboard' | 'products' | 'orders' | 'categories' | 'users' | 'invoices';
+type Tab = 'dashboard' | 'sliders' | 'products' | 'orders' | 'categories' | 'users' | 'invoices' | 'producers' | 'press' | 'settings';
 
 export default function Admin() {
   const [user, setUser] = useState(auth.currentUser);
@@ -52,6 +59,9 @@ export default function Admin() {
   const [orders, setOrders] = useState<any[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [users, setUsers] = useState<AppUser[]>([]);
+  const [siteLogo, setSiteLogo] = useState<string>(
+    localStorage.getItem('siteLogo') || "/src/assets/images/ahoron_logo_1779462502413.png"
+  );
   const [manualInvoices, setManualInvoices] = useState<ManualInvoice[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -65,6 +75,12 @@ export default function Admin() {
   const [viewingInvoice, setViewingInvoice] = useState<any | null>(null);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
   const [isManualInvoicePrintOpen, setIsManualInvoicePrintOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    id: string;
+    type: 'product' | 'category' | 'user' | 'invoice';
+    title: string;
+    message?: string;
+  } | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -74,6 +90,9 @@ export default function Admin() {
         setIsAdmin(adminStatus);
         if (adminStatus) {
            loadData();
+           adminService.getSettings().then(settings => {
+             if (settings && settings.logoUrl) setSiteLogo(settings.logoUrl);
+           });
         }
       }
       setLoading(false);
@@ -104,6 +123,27 @@ export default function Admin() {
       setManualInvoices(mi || []);
     } catch (e) {
       console.error('Error fetching admin data:', e);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirm) return;
+    try {
+      const { id, type } = deleteConfirm;
+      if (type === 'product') {
+        await adminService.deleteProduct(id);
+      } else if (type === 'category') {
+        await adminService.deleteCategory(id);
+      } else if (type === 'user') {
+        await adminService.deleteUser(id);
+      } else if (type === 'invoice') {
+        await adminService.deleteManualInvoice(id);
+      }
+      setDeleteConfirm(null);
+      loadData();
+    } catch (e) {
+      console.error('Delete error: ', e);
+      setDeleteConfirm(null);
     }
   };
 
@@ -158,9 +198,19 @@ export default function Admin() {
     <div className="flex h-screen bg-surface overflow-hidden">
       {/* Sidebar */}
       <aside className="w-20 lg:w-64 bg-white border-r border-gray-100 flex flex-col">
-        <div className="p-6">
-          <div className="logo-text text-2xl hidden lg:block">আহরোণ</div>
-          <div className="w-10 h-10 bg-primary rounded-xl lg:hidden flex items-center justify-center text-white">আ</div>
+        <div className="p-4 lg:p-6 flex justify-center lg:justify-start">
+          <img 
+            src={siteLogo} 
+            alt="আহরোণ" 
+            className="h-10 w-auto object-contain hidden lg:block animate-fade-in"
+            referrerPolicy="no-referrer"
+          />
+          <img 
+            src={siteLogo} 
+            alt="আ" 
+            className="h-8 w-auto object-contain lg:hidden animate-fade-in"
+            referrerPolicy="no-referrer"
+          />
         </div>
 
         <nav className="flex-1 px-4 space-y-2 pt-4">
@@ -169,6 +219,12 @@ export default function Admin() {
             label="Dashboard" 
             active={activeTab === 'dashboard'} 
             onClick={() => setActiveTab('dashboard')} 
+          />
+          <SidebarItem 
+            icon={ImageIcon} 
+            label="Hero Sliders" 
+            active={activeTab === 'sliders'} 
+            onClick={() => setActiveTab('sliders')} 
           />
           <SidebarItem 
             icon={Package} 
@@ -199,6 +255,24 @@ export default function Admin() {
             label="Manual Invoices" 
             active={activeTab === 'invoices'} 
             onClick={() => setActiveTab('invoices')} 
+          />
+          <SidebarItem 
+            icon={Sparkles} 
+            label="Producers" 
+            active={activeTab === 'producers'} 
+            onClick={() => setActiveTab('producers')} 
+          />
+          <SidebarItem 
+            icon={Newspaper} 
+            label="Newspaper (মিডিয়া)" 
+            active={activeTab === 'press'} 
+            onClick={() => setActiveTab('press')} 
+          />
+          <SidebarItem 
+            icon={SettingsIcon} 
+            label="Settings" 
+            active={activeTab === 'settings'} 
+            onClick={() => setActiveTab('settings')} 
           />
         </nav>
 
@@ -286,6 +360,21 @@ export default function Admin() {
           </div>
         )}
 
+        {activeTab === 'sliders' && (
+          <AdminSliders />
+        )}
+
+        {activeTab === 'producers' && (
+          <AdminProducers />
+        )}
+
+        {activeTab === 'press' && (
+          <AdminPress />
+        )}
+        {activeTab === 'settings' && (
+          <AdminSettings />
+        )}
+
         {activeTab === 'products' && (
           <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
             <ProductsTable 
@@ -295,11 +384,14 @@ export default function Admin() {
                 setEditingProduct(p);
                 setIsModalOpen(true);
               }}
-              onDelete={async (id) => {
-                if (confirm('Are you sure?')) {
-                  await adminService.deleteProduct(id);
-                  loadData();
-                }
+              onDelete={(id) => {
+                const prod = products.find(p => p.id === id);
+                setDeleteConfirm({
+                  id,
+                  type: 'product',
+                  title: 'Delete Product',
+                  message: `Are you sure you want to permanently delete the product "${prod?.name || ''}"?`
+                });
               }}
             />
           </div>
@@ -314,7 +406,7 @@ export default function Admin() {
         {activeTab === 'categories' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
             {categories.map((cat, idx) => (
-              <div key={`${cat.id || 'cat'}-${idx}`} className="bg-white p-6 rounded-3xl border border-gray-100 flex items-center justify-between group hover:border-primary transition-all shadow-sm hover:shadow-lg">
+              <div key={`cat-grid-${cat.id || 'cat'}-${idx}`} className="bg-white p-6 rounded-3xl border border-gray-100 flex items-center justify-between group hover:border-primary transition-all shadow-sm hover:shadow-lg">
                 <div className="flex items-center gap-4 min-w-0 flex-1">
                   <div className="w-14 h-14 bg-surface rounded-2xl flex-shrink-0 flex items-center justify-center text-primary shadow-inner">
                     <CategoryIcon name={cat.icon} size={24} />
@@ -335,11 +427,13 @@ export default function Admin() {
                     <Edit2 size={18} />
                   </button>
                   <button 
-                    onClick={async () => {
-                      if (confirm(`Delete category "${cat.name}"? Products in this category will remain but their category link might break.`)) {
-                        await adminService.deleteCategory(cat.id);
-                        loadData();
-                      }
+                    onClick={() => {
+                      setDeleteConfirm({
+                        id: cat.id,
+                        type: 'category',
+                        title: 'Delete Category',
+                        message: `Are you sure you want to delete category "${cat.name}"? Active products in this category will remain, but their category associations may be broken.`
+                      });
                     }}
                     className="p-2 text-gray-300 hover:text-red-500 transition-colors"
                   >
@@ -369,11 +463,14 @@ export default function Admin() {
                 setEditingUser(u);
                 setIsUserModalOpen(true);
               }}
-              onDelete={async (id: string) => {
-                if (confirm('Are you sure you want to delete this user?')) {
-                  await adminService.deleteUser(id);
-                  loadData();
-                }
+              onDelete={(id: string) => {
+                const usr = users.find(u => u.id === id);
+                setDeleteConfirm({
+                  id,
+                  type: 'user',
+                  title: 'Delete User Account',
+                  message: `Are you sure you want to delete user account "${usr?.name || usr?.email || ''}"?`
+                });
               }}
             />
           </div>
@@ -387,11 +484,14 @@ export default function Admin() {
                 setViewingInvoice(inv);
                 setIsManualInvoicePrintOpen(true);
               }}
-              onDelete={async (id: string) => {
-                if (confirm('Delete this invoice?')) {
-                  await adminService.deleteManualInvoice(id);
-                  loadData();
-                }
+              onDelete={(id: string) => {
+                const inv = manualInvoices.find(i => i.id === id);
+                setDeleteConfirm({
+                  id,
+                  type: 'invoice',
+                  title: 'Delete Manual Invoice',
+                  message: `Are you sure you want to permanently delete custom invoice #${inv?.invoiceNumber || ''}?`
+                });
               }}
             />
           </div>
@@ -457,6 +557,48 @@ export default function Admin() {
             onClose={() => setIsManualInvoicePrintOpen(false)} 
           />
         )}
+        {deleteConfirm && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-accent-deep/60 backdrop-blur-md">
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white max-w-sm w-full rounded-[2rem] shadow-2xl p-6 relative border border-gray-100 text-center"
+            >
+              <button 
+                onClick={() => setDeleteConfirm(null)} 
+                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-primary transition-colors hover:bg-surface rounded-full"
+              >
+                <X size={20} />
+              </button>
+              <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 size={24} />
+              </div>
+              <h3 className="text-xl font-display font-black text-accent-deep mb-2">
+                {deleteConfirm.title}
+              </h3>
+              <p className="text-gray-500 text-xs mb-6">
+                {deleteConfirm.message || 'Are you sure you want to permanently delete this item? This action cannot be undone.'}
+              </p>
+              <div className="flex gap-3">
+                <button 
+                  type="button" 
+                  onClick={() => setDeleteConfirm(null)}
+                  className="flex-1 bg-surface text-gray-500 py-3 rounded-xl font-bold hover:bg-gray-100 transition-all text-sm"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  className="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold hover:bg-red-600 transition-all shadow-lg shadow-red-500/20 text-sm"
+                >
+                  Confirm Delete
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </AnimatePresence>
     </div>
   );
@@ -510,7 +652,7 @@ function ProductsTable({ products, categories, onEdit, onDelete }: any) {
       </thead>
       <tbody className="divide-y divide-gray-50">
         {products.map((p: Product, idx: number) => (
-          <tr key={`${p.id || 'new'}-${idx}`} className="hover:bg-surface/50 transition-colors">
+          <tr key={`product-row-${p.id || 'new'}-${idx}`} className="hover:bg-surface/50 transition-colors">
             <td className="px-6 py-4">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden flex items-center justify-center relative">
@@ -612,7 +754,7 @@ function OrdersTable({ orders, onUpdateStatus, onView }: any) {
           {orders.map((o: any, idx: number) => {
             const Icon = getStatusIcon(o.status);
             return (
-              <tr key={`${o.id || 'order'}-${idx}`} className="hover:bg-surface/50 transition-colors">
+              <tr key={`order-row-${o.id || 'order'}-${idx}`} className="hover:bg-surface/50 transition-colors">
                 <td className="px-6 py-4 font-mono text-xs text-primary font-bold">#{o.id ? o.id.slice(0, 8) : 'NEW'}</td>
                 <td className="px-6 py-4">
                   <div className="text-sm font-bold text-accent-deep">{o.customer?.name}</div>
@@ -698,7 +840,7 @@ function CategoryModal({ category, onClose, onSave }: any) {
       <motion.div 
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
-        className="bg-white max-w-md w-full rounded-[2.5rem] shadow-2xl p-8 relative"
+        className="bg-white max-w-md w-full max-h-[90vh] overflow-y-auto rounded-[2.5rem] shadow-2xl p-6 md:p-8 relative"
       >
         <button onClick={onClose} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-primary transition-colors">
           <X size={24} />
@@ -728,7 +870,7 @@ function CategoryModal({ category, onClose, onSave }: any) {
             <div className="grid grid-cols-5 gap-3">
               {icons.map((iconName, idx) => (
                 <button
-                  key={`${iconName}-${idx}`}
+                  key={`icon-btn-${iconName}-${idx}`}
                   type="button"
                   onClick={() => setFormData({...formData, icon: iconName})}
                   className={cn(
@@ -807,7 +949,7 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Order Items ({order.items.length})</h3>
             <div className="divide-y divide-gray-100 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
               {order.items.map((item: any, idx: number) => (
-                <div key={`${item.id || 'item'}-${idx}`} className="p-4 flex items-center gap-4 hover:bg-surface/30 transition-colors">
+                <div key={`order-item-${item.id || 'item'}-${idx}`} className="p-4 flex items-center gap-4 hover:bg-surface/30 transition-colors">
                   <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden flex-shrink-0">
                     <img src={item.image} className="w-full h-full object-cover" />
                   </div>
@@ -861,15 +1003,59 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
   );
 }
 
-function InvoiceModal({ order, onClose }: any) {
-  const contentRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useReactToPrint({
-    contentRef,
-    documentTitle: `Invoice-${order.id.slice(-8).toUpperCase()}`,
-  });
+  function InvoiceModal({ order, onClose }: any) {
+    const contentRef = useRef<HTMLDivElement>(null);
+    const [isGenerating, setIsGenerating] = useState(false);
+    
+    const handlePrint = () => {
+      // Native browser print is the most robust solution for A4/PDF
+      window.print();
+    };
+
+    const handleDownloadPDF = async () => {
+      if (!contentRef.current || isGenerating) return;
+      setIsGenerating(true);
+      
+      try {
+        const element = contentRef.current;
+        const opt = {
+          margin: 0,
+          filename: `Invoice-${order?.id?.slice(-8).toUpperCase() || 'MANUAL'}.pdf`,
+          image: { type: 'jpeg' as const, quality: 0.98 },
+          html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            letterRendering: true,
+            scrollY: 0,
+            scrollX: 0,
+            onclone: (clonedDoc: Document) => {
+              // html2canvas parser crashes on oklch() colors.
+              // We need to strip or replace oklch references in the cloned document's styles.
+              const styles = clonedDoc.querySelectorAll('style');
+              styles.forEach(style => {
+                if (style.textContent?.includes('oklch')) {
+                  style.textContent = style.textContent.replace(/oklch\([^)]+\)/g, '#10b981');
+                }
+              });
+            }
+          },
+          jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+        };
+
+        // Use html2pdf for high-quality PDF generation
+        await html2pdf().set(opt).from(element).save();
+      } catch (error) {
+        console.error('PDF Generation Error:', error);
+        // Fallback to print (Save as PDF) if html2pdf fails
+        window.print();
+      } finally {
+        setIsGenerating(false);
+      }
+    };
 
   return (
     <motion.div 
+      id="invoice-content-root"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -878,16 +1064,22 @@ function InvoiceModal({ order, onClose }: any) {
       {/* Controls - Sticky on Mobile */}
       <div className="fixed top-0 left-0 right-0 p-4 flex flex-wrap justify-center sm:justify-end gap-2 bg-black/50 backdrop-blur-md sm:bg-transparent sm:backdrop-blur-none sm:absolute sm:top-8 sm:right-8 z-[100] print:hidden">
         <button 
-          onClick={() => handlePrint()}
+          onClick={handlePrint}
           className="bg-primary text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl shadow-xl flex items-center gap-2 font-bold hover:scale-105 transition-all active:scale-95 text-sm sm:text-base"
         >
           <Printer size={16} className="sm:w-[18px]" /> Print <span className="hidden xs:inline">Invoice</span>
         </button>
         <button 
-          onClick={() => handlePrint()}
-          className="bg-accent-deep text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl shadow-xl flex items-center gap-2 font-bold hover:scale-105 transition-all active:scale-95 text-sm sm:text-base"
+          onClick={handleDownloadPDF}
+          disabled={isGenerating}
+          className="bg-accent-deep text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl shadow-xl flex items-center gap-2 font-bold hover:scale-105 transition-all active:scale-95 text-sm sm:text-base disabled:opacity-50"
         >
-          <Download size={16} className="sm:w-[18px]" /> <span className="hidden xs:inline">Save</span> PDF
+          {isGenerating ? (
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <Download size={16} className="sm:w-[18px]" />
+          )}
+          <span className="hidden xs:inline">{isGenerating ? 'Wait...' : 'Save PDF'}</span>
         </button>
         <button 
           onClick={onClose}
@@ -994,7 +1186,7 @@ function InvoiceModal({ order, onClose }: any) {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {order.items?.map((item: any, i: number) => (
-                  <tr key={`${item.id || 'inv'}-${i}`} className="text-sm group hover:bg-surface/50 transition-colors">
+                  <tr key={`inv-item-${item.id || 'inv'}-${i}`} className="text-sm group hover:bg-surface/50 transition-colors">
                     <td className="px-3 py-5 font-bold text-gray-400">{(i + 1).toString().padStart(2, '0')}</td>
                     <td className="px-3 py-5">
                       <div className="flex items-center gap-3">
@@ -1283,7 +1475,7 @@ function ProductModal({ product, onClose, onSave, categories }: any) {
                 onChange={e => setFormData({...formData, category: e.target.value})}
               >
                 {categories.map((c: any, idx: number) => (
-                  <option key={`${c.id || 'opt'}-${idx}`} value={c.id}>{c.name}</option>
+                  <option key={`admin-cat-opt-${c.id || 'opt'}-${idx}`} value={c.id}>{c.name}</option>
                 ))}
               </select>
             </div>
@@ -1364,7 +1556,7 @@ function ProductModal({ product, onClose, onSave, categories }: any) {
             
             <div className="flex flex-wrap gap-4">
               {formData.images.map((img, idx) => (
-                <div key={`gallery-${idx}`} className="relative group">
+                <div key={`admin-prod-gal-${idx}`} className="relative group">
                   <img 
                     src={img} 
                     className="w-20 h-20 rounded-2xl object-cover border border-gray-100 shadow-sm" 
@@ -1450,7 +1642,7 @@ function UsersTable({ users, onEdit, onDelete }: any) {
         </thead>
         <tbody className="divide-y divide-gray-50">
           {users.map((u: any, idx: number) => (
-            <tr key={`${u.id || 'user'}-${idx}`} className="hover:bg-surface/50 transition-colors">
+            <tr key={`user-row-${u.id || 'user'}-${idx}`} className="hover:bg-surface/50 transition-colors">
               <td className="px-6 py-4">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
@@ -1474,7 +1666,7 @@ function UsersTable({ users, onEdit, onDelete }: any) {
               <td className="px-6 py-4">
                 <div className="flex flex-wrap gap-1">
                   {(u.permissions || []).map((p: string, i: number) => (
-                    <span key={i} className="text-[8px] bg-surface px-1.5 py-0.5 rounded border border-gray-100 text-gray-400 font-bold uppercase">
+                    <span key={`user-perm-${u.id || 'new'}-${p}-${i}`} className="text-[8px] bg-surface px-1.5 py-0.5 rounded border border-gray-100 text-gray-400 font-bold uppercase">
                       {p}
                     </span>
                   ))}
@@ -1510,7 +1702,7 @@ function InvoicesTable({ invoices, onView, onDelete }: any) {
         </thead>
         <tbody className="divide-y divide-gray-50">
           {invoices.map((inv: any, idx: number) => (
-            <tr key={`${inv.id || 'inv'}-${idx}`} className="hover:bg-surface/50 transition-colors">
+            <tr key={`inv-row-${inv.id || 'inv'}-${idx}`} className="hover:bg-surface/50 transition-colors">
               <td className="px-6 py-4 font-mono text-xs text-primary font-bold">{inv.invoiceNo}</td>
               <td className="px-6 py-4">
                 <div className="text-sm font-bold text-accent-deep">{inv.customer?.name}</div>
@@ -1583,7 +1775,7 @@ function UserModal({ user, onClose, onSave }: any) {
       <motion.div 
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
-        className="bg-white max-w-md w-full rounded-[2.5rem] shadow-2xl p-8 relative"
+        className="bg-white max-w-md w-full max-h-[90vh] overflow-y-auto rounded-[2.5rem] shadow-2xl p-6 md:p-8 relative"
       >
         <button onClick={onClose} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-primary transition-colors">
           <X size={24} />
@@ -1629,9 +1821,9 @@ function UserModal({ user, onClose, onSave }: any) {
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Permissions</label>
             <div className="flex flex-wrap gap-2">
-              {allPermissions.map(p => (
+              {allPermissions.map((p, pIdx) => (
                 <button
-                  key={p}
+                  key={`admin-perm-btn-${p}-${pIdx}`}
                   type="button"
                   onClick={() => togglePermission(p)}
                   className={cn(
@@ -1802,7 +1994,7 @@ function ManualInvoiceModal({ invoice, onClose, onSave }: any) {
             
             <div className="space-y-3">
               {formData.items.map((item: any, idx: number) => (
-                <div key={idx} className="flex gap-3 items-end bg-gray-50 p-4 rounded-2xl group transition-all hover:bg-white hover:shadow-md border border-transparent hover:border-gray-100">
+                <div key={`admin-manual-inv-item-${idx}`} className="flex gap-3 items-end bg-gray-50 p-4 rounded-2xl group transition-all hover:bg-white hover:shadow-md border border-transparent hover:border-gray-100">
                   <div className="flex-1 space-y-2">
                     <label className="text-[10px] font-bold text-gray-400 uppercase">Item Name</label>
                     <input 

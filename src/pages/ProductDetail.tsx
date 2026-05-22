@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Star, ChevronLeft, Heart, ShoppingBag, Truck, ShieldCheck, Minus, Plus } from 'lucide-react';
+import { Star, ChevronLeft, Heart, ShoppingBag, Truck, ShieldCheck, Minus, Plus, Share2 } from 'lucide-react';
 import { PRODUCTS as STATIC_PRODUCTS } from '../data';
 import { useCart } from '../hooks/useCart';
 import { useState, useEffect } from 'react';
@@ -8,6 +8,7 @@ import React from 'react';
 import { cn } from '../lib/utils';
 import { storeService } from '../services/storeService';
 import { Product, Category } from '../types';
+import { AuthenticityCard } from '../components/AuthenticityCard';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -71,6 +72,16 @@ export default function ProductDetail() {
   };
 
   useEffect(() => {
+    if (id) {
+      const history = JSON.parse(localStorage.getItem('viewed_products') || '[]');
+      if (!history.includes(id)) {
+        const newHistory = [id, ...history].slice(0, 10);
+        localStorage.setItem('viewed_products', JSON.stringify(newHistory));
+      }
+    }
+  }, [id]);
+
+  useEffect(() => {
     async function loadData() {
       if (!id) return;
       try {
@@ -89,6 +100,12 @@ export default function ProductDetail() {
     loadData();
   }, [id]);
 
+  const quickBuy = () => {
+    if (!product) return;
+    addToCart(product, quantity, { size: selectedSize, color: selectedColor });
+    navigate('/checkout');
+  };
+
   if (loading && !product) {
     return (
       <div className="h-96 flex items-center justify-center">
@@ -106,10 +123,10 @@ export default function ProductDetail() {
     <div className="pb-24 lg:pb-10 bg-white">
       {/* Mobile Top Nav */}
       <div className="sticky top-0 z-50 flex items-center justify-between p-4 bg-white/80 backdrop-blur md:hidden">
-        <button onClick={() => navigate(-1)} className="p-2 bg-gray-50 rounded-2xl">
+        <button onClick={() => navigate(-1)} className="p-2 bg-gray-50 rounded-2xl tap-feedback">
           <ChevronLeft size={24} />
         </button>
-        <button className="p-2 bg-gray-50 rounded-2xl">
+        <button className="p-2 bg-gray-50 rounded-2xl tap-feedback">
           <Heart size={20} />
         </button>
       </div>
@@ -137,7 +154,7 @@ export default function ProductDetail() {
           <div className="flex flex-wrap gap-4 px-2">
             {allImages.map((img, idx) => (
               <button 
-                key={`thumb-${idx}`}
+                key={`p-detail-thumb-${idx}`}
                 onClick={() => setActiveImage(idx)}
                 className={cn(
                   "w-16 h-16 rounded-2xl overflow-hidden border-2 transition-all",
@@ -187,9 +204,9 @@ export default function ProductDetail() {
               <div className="space-y-3">
                 <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Select Size</span>
                 <div className="flex gap-3">
-                  {['S', 'M', 'L', 'XL'].map(size => (
+                  {['S', 'M', 'L', 'XL'].map((size, idx) => (
                     <button
-                      key={size}
+                      key={`detail-size-${size}-${idx}`}
                       onClick={() => setSelectedSize(size)}
                       className={cn(
                         "w-12 h-12 rounded-2xl font-bold transition-all border flex items-center justify-center",
@@ -218,6 +235,15 @@ export default function ProductDetail() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 md:px-8 mt-12 mb-12">
+        <AuthenticityCard 
+          origin={product.origin}
+          harvestDate={product.harvestDate}
+          labTestUrl={product.labTestUrl}
+          isVerified={product.isVerified}
+        />
       </div>
 
       {/* Sticky Bottom Actions */}
@@ -258,17 +284,24 @@ export default function ProductDetail() {
           <button className="hidden md:flex p-4 rounded-2xl border border-gray-100 text-gray-400 hover:text-primary transition-colors">
             <Heart size={24} />
           </button>
-          <motion.button 
-            whileTap={{ scale: 0.95 }}
-            onClick={validateAndAdd}
-            className="flex-1 bg-primary text-white rounded-[1.5rem] py-4 font-bold flex items-center justify-center gap-2 shadow-xl shadow-primary/20 hover:brightness-110 transition-all"
-          >
-            <ShoppingBag size={20} />
-            Add to Cart
-          </motion.button>
-          <button className="hidden lg:block button-secondary py-4 px-10">
-            Quick Buy
-          </button>
+          <div className="flex-1 flex gap-2">
+            <motion.button 
+              whileTap={{ scale: 0.95 }}
+              onClick={validateAndAdd}
+              className="flex-1 bg-primary text-white rounded-[1.5rem] py-4 font-bold flex items-center justify-center gap-2 shadow-xl shadow-primary/20 hover:brightness-110 transition-all tap-feedback"
+            >
+              <ShoppingBag size={20} />
+              <span className="hidden sm:inline">Add to Cart</span>
+              <span className="sm:hidden">Add</span>
+            </motion.button>
+            <button 
+              onClick={quickBuy}
+              className="flex-1 bg-secondary text-white rounded-[1.5rem] py-4 font-bold flex items-center justify-center gap-2 shadow-xl shadow-secondary/20 hover:brightness-110 transition-all tap-feedback"
+            >
+              <span className="hidden sm:inline">Buy Now</span>
+              <span className="sm:hidden">Buy</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

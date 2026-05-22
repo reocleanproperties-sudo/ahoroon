@@ -8,12 +8,21 @@ export interface Product {
   category: string;
   description: string;
   isFlashSale?: boolean;
+  isFeatured?: boolean;
+  isPopular?: boolean;
   discount?: number;
   images: string[];
   unit?: string;
   size?: number;
+  sizes?: string[];
+  colors?: string[];
+  brand?: string;
   moq?: number;
   step?: number;
+  origin?: string;
+  labTestUrl?: string;
+  harvestDate?: string;
+  isVerified?: boolean;
 }
 
 export interface Category {
@@ -68,3 +77,39 @@ export interface ManualInvoice {
   status: string;
   createdAt: any;
 }
+
+export interface SliderImage {
+  id: string;
+  imageUrl: string;
+  title: string;
+  description: string;
+  link: string;
+  order: number;
+}
+
+export interface Producer {
+  id: string;
+  name: string;
+  role: string;
+  img: string;
+  story: string;
+  order: number;
+}
+
+export interface PressCoverage {
+  id: string;
+  source: string;
+  title: string;
+  excerpt: string;
+  img: string;
+  link: string;
+  date: string;
+  order: number;
+}
+
+export interface SiteSetting {
+  id: string;
+  logoUrl: string;
+}
+
+

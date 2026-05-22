@@ -8,7 +8,8 @@ import {
   query, 
   orderBy, 
   serverTimestamp,
-  getDoc
+  getDoc,
+  setDoc
 } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { Product, Category, AppUser, ManualInvoice } from '../types';
@@ -264,6 +265,178 @@ export const adminService = {
       await deleteDoc(doc(db, 'manualInvoices', id));
     } catch (e) {
       handleFirestoreError(e, OperationType.DELETE, path);
+    }
+  },
+
+  // Sliders
+  async getSliders() {
+    const path = 'sliders';
+    try {
+      const q = query(collection(db, path), orderBy('order', 'asc'));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.LIST, path);
+    }
+  },
+
+  async addSlider(slider: { imageUrl: string; title: string; description: string; link: string; order: number }) {
+    const path = 'sliders';
+    try {
+      const docRef = await addDoc(collection(db, path), {
+        ...slider,
+        createdAt: serverTimestamp(),
+      });
+      return docRef.id;
+    } catch (e) {
+      handleFirestoreError(e, OperationType.CREATE, path);
+    }
+  },
+
+  async updateSlider(id: string, slider: Partial<{ imageUrl: string; title: string; description: string; link: string; order: number }>) {
+    const path = `sliders/${id}`;
+    try {
+      await updateDoc(doc(db, 'sliders', id), {
+        ...slider,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, path);
+    }
+  },
+
+  async deleteSlider(id: string) {
+    const path = `sliders/${id}`;
+    try {
+      await deleteDoc(doc(db, 'sliders', id));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, path);
+    }
+  },
+
+  // Producers
+  async getProducers() {
+    const path = 'producers';
+    try {
+      const q = query(collection(db, path), orderBy('order', 'asc'));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.LIST, path);
+    }
+  },
+
+  async addProducer(producer: { name: string; role: string; img: string; story: string; order: number }) {
+    const path = 'producers';
+    try {
+      const docRef = await addDoc(collection(db, path), {
+        ...producer,
+        createdAt: serverTimestamp(),
+      });
+      return docRef.id;
+    } catch (e) {
+      handleFirestoreError(e, OperationType.CREATE, path);
+    }
+  },
+
+  async updateProducer(id: string, producer: Partial<{ name: string; role: string; img: string; story: string; order: number }>) {
+    const path = `producers/${id}`;
+    try {
+      await updateDoc(doc(db, 'producers', id), {
+        ...producer,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, path);
+    }
+  },
+
+  async deleteProducer(id: string) {
+    const path = `producers/${id}`;
+    try {
+      await deleteDoc(doc(db, 'producers', id));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, path);
+    }
+  },
+
+  // Press / News Coverages
+  async getPress() {
+    const path = 'press';
+    try {
+      const q = query(collection(db, path), orderBy('order', 'asc'));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.LIST, path);
+    }
+  },
+
+  async addPress(press: { source: string; title: string; excerpt: string; img: string; link: string; date: string; order: number }) {
+    const path = 'press';
+    try {
+      const docRef = await addDoc(collection(db, path), {
+        ...press,
+        createdAt: serverTimestamp(),
+      });
+      return docRef.id;
+    } catch (e) {
+      handleFirestoreError(e, OperationType.CREATE, path);
+    }
+  },
+
+  async updatePress(id: string, press: Partial<{ source: string; title: string; excerpt: string; img: string; link: string; date: string; order: number }>) {
+    const path = `press/${id}`;
+    try {
+      await updateDoc(doc(db, 'press', id), {
+        ...press,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, path);
+    }
+  },
+
+  async deletePress(id: string) {
+    const path = `press/${id}`;
+    try {
+      await deleteDoc(doc(db, 'press', id));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, path);
+    }
+  },
+
+  async getSettings() {
+    const path = 'settings/general';
+    try {
+      const docRef = doc(db, 'settings', 'general');
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        const data = snap.data() as { logoUrl: string };
+        if (data && data.logoUrl) {
+          localStorage.setItem('siteLogo', data.logoUrl);
+        }
+        return data;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  async updateSettings(settings: { logoUrl: string }) {
+    const path = 'settings/general';
+    try {
+      const docRef = doc(db, 'settings', 'general');
+      await setDoc(docRef, {
+        ...settings,
+        updatedAt: serverTimestamp()
+      });
+      if (settings.logoUrl) {
+        localStorage.setItem('siteLogo', settings.logoUrl);
+      }
+    } catch (e) {
+      handleFirestoreError(e, OperationType.WRITE, path);
     }
   }
 };

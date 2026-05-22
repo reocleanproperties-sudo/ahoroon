@@ -1,13 +1,33 @@
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Facebook, Instagram, Twitter } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { adminService } from '../services/adminService';
 
 export const Footer = () => {
+  const [siteLogo, setSiteLogo] = useState<string>(
+    localStorage.getItem('siteLogo') || "/src/assets/images/ahoron_logo_1779462502413.png"
+  );
+
+  useEffect(() => {
+    adminService.getSettings()
+      .then(settings => {
+        if (settings && settings.logoUrl) {
+          setSiteLogo(settings.logoUrl);
+        }
+      })
+      .catch(err => console.error("Error loading settings:", err));
+  }, []);
   return (
     <footer className="bg-white border-t border-gray-100 pt-10 pb-8 px-4 md:px-8">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
         <div className="space-y-6">
-          <Link to="/" className="logo-text text-3xl">
-            আহরোণ
+          <Link to="/" className="inline-block">
+            <img 
+              src={siteLogo} 
+              alt="আহরোণ" 
+              className="h-12 w-auto object-contain transition-transform duration-300 hover:scale-105"
+              referrerPolicy="no-referrer"
+            />
           </Link>
           <p className="text-gray-500 text-sm leading-relaxed">
             আহরোণ—বাংলার ঐতিহ্যবাহী খাবারকে ভেজালমুক্তভাবে আপনার কাছে পৌঁছে দেওয়ার একটি বিশ্বস্ত নাম।

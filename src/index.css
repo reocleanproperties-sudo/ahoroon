@@ -1,20 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=Galada&family=Anek+Bangla:wght@100..800&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Galada&family=Anek+Bangla:wght@100..800&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Hind Siliguri", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Anek Bangla", "Outfit", sans-serif;
+  --font-sans: "Hind Siliguri", "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Anek Bangla", "Cormorant Garamond", serif;
+  --font-serif: "Libre Baskerville", serif;
   --font-logo: "Galada", cursive;
 
-  --color-primary: #10B981; /* Emerald Green */
-  --color-accent-deep: #065F46; /* Forest Green */
-  --color-surface: #F9FAFB;
+  --color-primary: #5A5A40; /* Leaf Green / Olive */
+  --color-accent-deep: #2D2D1B; /* Deep Forest */
+  --color-secondary: #B45309; /* Terracotta / Brick */
+  --color-surface: #FBFBF8; /* Warm Paper */
   --color-card: #FFFFFF;
 }
 
 @layer base {
   body {
-    @apply bg-surface text-gray-900 antialiased font-sans selection:bg-primary/20;
+    @apply bg-surface text-accent-deep antialiased font-sans selection:bg-primary/20;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -24,24 +26,16 @@
 
 @layer components {
   .logo-text {
-    @apply font-logo text-accent-deep leading-none transition-all duration-300 transform-gpu -translate-y-1;
+    @apply font-logo text-primary leading-none transition-all duration-300 transform-gpu -translate-y-1;
     text-shadow: 
-      0 1px 0 #054a36,
-      0 2px 0 #043d2c,
-      0 3px 0 #033022,
-      0 4px 0 #022319,
-      0 5px 0 #011610,
-      0 15px 30px rgba(0,0,0,0.3);
+      0 1px 0 #464632,
+      0 2px 0 #323223,
+      0 3px 0 #1e1e14;
   }
 
   .logo-text:hover {
-    text-shadow: 
-      0 1px 0 #054a36,
-      0 2px 0 #043d2c,
-      0 3px 0 #033022,
-      0 4px 0 #022319,
-      0 10px 20px rgba(0,0,0,0.2);
-    @apply translate-y-0 shadow-none;
+    @apply translate-y-0 opacity-80;
+    text-shadow: none;
   }
 
   .thumb-safe-bottom {
@@ -49,15 +43,43 @@
   }
 
   .glass-card {
-    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-sm rounded-3xl;
+    @apply bg-white/70 backdrop-blur-md border border-white/40 shadow-sm rounded-3xl transition-all duration-500 hover:shadow-xl hover:shadow-primary/5 active:scale-[0.99];
   }
 
   .button-primary {
-    @apply bg-primary text-white font-medium px-6 py-3 rounded-2xl transition-all active:scale-95 shadow-lg shadow-primary/20 hover:brightness-110;
+    @apply bg-primary text-white font-medium px-6 py-3 rounded-2xl transition-all active:scale-95 shadow-lg shadow-primary/20 hover:brightness-110 cursor-pointer;
   }
 
   .button-secondary {
-    @apply bg-gray-100 text-gray-900 font-medium px-6 py-3 rounded-2xl transition-all active:scale-95 hover:bg-gray-200;
+    @apply bg-white text-primary border-2 border-primary/10 font-medium px-6 py-3 rounded-2xl transition-all active:scale-95 hover:bg-primary/5 cursor-pointer;
+  }
+
+  .terracotta-tag {
+    @apply bg-secondary/10 text-secondary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest;
+  }
+
+  /* Micro-interactions */
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-xl hover:shadow-primary/10;
+  }
+
+  .tap-feedback {
+    @apply active:scale-95 transition-transform;
+  }
+
+  .scroll-fade-in {
+    animation: fadeIn linear both;
+    animation-timeline: view();
+    animation-range: entry 5% cover 20%;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 }
 
@@ -68,4 +90,60 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@media print {
+  body {
+    visibility: hidden !important;
+    background: white !important;
+  }
+
+  #invoice-content-root,
+  #invoice-content,
+  #invoice-content * {
+    visibility: visible !important;
+  }
+
+  #invoice-content {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    min-height: auto !important;
+    color: #2D2D1B !important;
+  }
+
+  .bg-primary, [style*="--color-primary"] { background-color: #5A5A40 !important; }
+  .bg-accent-deep, [style*="--color-accent-deep"] { background-color: #2D2D1B !important; }
+  .bg-surface, [style*="--color-surface"] { background-color: #FBFBF8 !important; }
+  
+  .text-primary { color: #5A5A40 !important; }
+  .text-accent-deep { color: #2D2D1B !important; }
+  
+  .border-primary { border-color: #5A5A40 !important; }
+  .border-accent-deep { border-color: #2D2D1B !important; }
+
+  .print\:hidden,
+  button,
+  .fixed.top-0.left-0.right-0 {
+    display: none !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    --color-primary: #5A5A40 !important;
+    --color-accent-deep: #2D2D1B !important;
+    --color-surface: #FBFBF8 !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
 }
