@@ -5,7 +5,7 @@ import { adminService } from '../services/adminService';
 
 export const Footer = () => {
   const [footerLogo, setFooterLogo] = useState<string>(
-    localStorage.getItem('siteFooterLogo') || localStorage.getItem('siteLogo') || "/src/assets/images/ahoron_logo_1779462502413.png"
+    localStorage.getItem('siteFooterLogo') || localStorage.getItem('siteLogo') || ""
   );
 
   useEffect(() => {

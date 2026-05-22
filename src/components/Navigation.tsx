@@ -19,7 +19,7 @@ export const TopNav = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [categories, setCategories] = useState<Category[]>(STATIC_CATEGORIES);
   const [siteLogo, setSiteLogo] = useState<string>(
-    localStorage.getItem('siteLogo') || "/src/assets/images/ahoron_logo_1779462502413.png"
+    localStorage.getItem('siteLogo') || ""
   );
   const location = useLocation();
 

@@ -60,7 +60,7 @@ export default function Admin() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [users, setUsers] = useState<AppUser[]>([]);
   const [siteLogo, setSiteLogo] = useState<string>(
-    localStorage.getItem('siteLogo') || "/src/assets/images/ahoron_logo_1779462502413.png"
+    localStorage.getItem('siteLogo') || ""
   );
   const [manualInvoices, setManualInvoices] = useState<ManualInvoice[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
