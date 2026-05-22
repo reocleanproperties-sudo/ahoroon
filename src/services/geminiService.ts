@@ -1,15 +1,21 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Product } from "../types";
 
-// Initialize Gemini with User-Agent telemetry headers
-const ai = new GoogleGenAI({ 
-  apiKey: process.env.GEMINI_API_KEY as string,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
+let ai: GoogleGenAI | null = null;
+try {
+  if (process.env.GEMINI_API_KEY) {
+    ai = new GoogleGenAI({ 
+      apiKey: process.env.GEMINI_API_KEY as string,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
   }
-});
+} catch (e) {
+  console.warn("Failed to initialize GoogleGenAI", e);
+}
 
 export const geminiService = {
   async getRecommendations(allProducts: Product[], userHistory?: string[]): Promise<string[]> {
@@ -34,6 +40,10 @@ export const geminiService = {
       ${JSON.stringify(productContext, null, 2)}
       
       Return ONLY a JSON array of the 4 recommended product IDs.`;
+
+      if (!ai) {
+        throw new Error("Gemini AI instance is null");
+      }
 
       const response = await ai.models.generateContent({
         model: "gemini-3.5-flash",

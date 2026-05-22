@@ -1,13 +1,20 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ 
-  apiKey: process.env.GEMINI_API_KEY || '',
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
+let ai: GoogleGenAI | null = null;
+try {
+  if (process.env.GEMINI_API_KEY) {
+    ai = new GoogleGenAI({ 
+      apiKey: process.env.GEMINI_API_KEY as string,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
   }
-});
+} catch (e) {
+  console.warn("Failed to initialize GoogleGenAI", e);
+}
 
 export const aiService = {
   async generateProductDescription(productName: string, category: string) {
@@ -16,6 +23,10 @@ export const aiService = {
     try {
       if (!process.env.GEMINI_API_KEY) {
         throw new Error("GEMINI_API_KEY is not configured");
+      }
+
+      if (!ai) {
+        throw new Error("Gemini AI instance is null");
       }
 
       const response = await ai.models.generateContent({
