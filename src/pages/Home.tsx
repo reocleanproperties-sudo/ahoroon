@@ -156,9 +156,9 @@ const FALLBACK_PRESS: PressCoverage[] = [
 export default function Home() {
   const [products, setProducts] = useState<Product[]>(STATIC_PRODUCTS);
   const [categories, setCategories] = useState<Category[]>(STATIC_CATEGORIES);
-  const [sliders, setSliders] = useState<SliderImage[]>(FALLBACK_SLIDERS);
-  const [producers, setProducers] = useState<Producer[]>(FALLBACK_PRODUCERS);
-  const [press, setPress] = useState<PressCoverage[]>(FALLBACK_PRESS);
+  const [sliders, setSliders] = useState<SliderImage[]>([]);
+  const [producers, setProducers] = useState<Producer[]>([]);
+  const [press, setPress] = useState<PressCoverage[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Carousel States
@@ -179,26 +179,11 @@ export default function Home() {
         
         if (p && p.length > 0) setProducts(p);
         if (c && c.length > 0) setCategories(c);
-        if (s && s.length > 0) {
-          setSliders(s);
-        } else {
-          setSliders(FALLBACK_SLIDERS);
-        }
-        if (pr && pr.length > 0) {
-          setProducers(pr);
-        } else {
-          setProducers(FALLBACK_PRODUCERS);
-        }
-        if (ps && ps.length > 0) {
-          setPress(ps);
-        } else {
-          setPress(FALLBACK_PRESS);
-        }
+        if (s) setSliders(s);
+        if (pr) setProducers(pr);
+        if (ps) setPress(ps);
       } catch (e) {
         console.error('Error fetching home data:', e);
-        setSliders(FALLBACK_SLIDERS);
-        setProducers(FALLBACK_PRODUCERS);
-        setPress(FALLBACK_PRESS);
       } finally {
         setLoading(false);
       }
@@ -245,6 +230,7 @@ export default function Home() {
     <div className="space-y-24 pb-24 overflow-x-hidden pt-4 bg-slate-50/50">
       
       {/* Hero Action Carousel Section */}
+      {sliders.length > 0 && (
       <section className="px-4 md:px-8 max-w-7xl mx-auto select-none">
         <div 
           onMouseEnter={() => setIsCarouselHovered(true)}
@@ -377,6 +363,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Featured Products Section - Minimalist / Luxury */}
       <section className="px-4 md:px-8 max-w-7xl mx-auto space-y-10">

@@ -3,7 +3,6 @@ import { motion } from 'motion/react';
 import { Sparkles } from 'lucide-react';
 import { Product } from '../types';
 import { ProductCard } from './ProductCard';
-import { geminiService } from '../services/geminiService';
 import { storeService } from '../services/storeService';
 
 export const RecommendedProducts = () => {
@@ -14,18 +13,9 @@ export const RecommendedProducts = () => {
     async function loadRecommendations() {
       try {
         const allProducts = await storeService.getProducts();
-        // In a real app, track user history in localStorage or DB
-        const history = JSON.parse(localStorage.getItem('viewed_products') || '[]');
         
-        const recommendedIds = await geminiService.getRecommendations(allProducts, history);
-        const recommendedProducts = allProducts.filter(p => recommendedIds.includes(p.id));
-        
-        // If Gemini returns nothing, pick 4 random
-        if (recommendedProducts.length === 0) {
-          setRecommendations(allProducts.sort(() => 0.5 - Math.random()).slice(0, 4));
-        } else {
-          setRecommendations(recommendedProducts);
-        }
+        // Return 4 random products since AI is disabled
+        setRecommendations(allProducts.sort(() => 0.5 - Math.random()).slice(0, 4));
       } catch (error) {
         console.error(error);
       } finally {
@@ -57,7 +47,7 @@ export const RecommendedProducts = () => {
           </div>
           <h2 className="text-xl font-bold font-display text-accent-deep">Recommended for You</h2>
         </div>
-        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-full">AI Powered</span>
+        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-full">Top Picks</span>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
