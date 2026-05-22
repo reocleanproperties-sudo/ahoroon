@@ -200,7 +200,7 @@ export default function Home() {
 
     autoPlayRef.current = setInterval(() => {
       setActiveSlide((prev) => (prev + 1) % sliders.length);
-    }, 5500);
+    }, 3000);
 
     return () => {
       if (autoPlayRef.current) clearInterval(autoPlayRef.current);
@@ -230,137 +230,143 @@ export default function Home() {
     <div className="space-y-24 pb-24 overflow-x-hidden pt-4 bg-slate-50/50">
       
       {/* Hero Action Carousel Section */}
-      {sliders.length > 0 && (
+      {(sliders.length > 0 || loading) && (
       <section className="px-4 md:px-8 max-w-7xl mx-auto select-none">
         <div 
           onMouseEnter={() => setIsCarouselHovered(true)}
           onMouseLeave={() => setIsCarouselHovered(false)}
-          className="relative w-full aspect-[16/9] xs:aspect-[2/1] md:aspect-[2.39/1] lg:h-[580px] xl:h-[620px] rounded-[1.25rem] sm:rounded-[2rem] md:rounded-[3.5rem] overflow-hidden group shadow-2xl bg-slate-900 border border-slate-100"
+          className="relative w-full aspect-[16/9] xs:aspect-[2/1] md:aspect-[2.39/1] lg:h-[580px] xl:h-[620px] rounded-[1.25rem] sm:rounded-[2rem] md:rounded-[3.5rem] overflow-hidden group shadow-2xl bg-slate-900 border border-slate-100 flex items-center justify-center"
         >
-          {/* Transition wrapper */}
-          <AnimatePresence mode="wait">
-            {sliders.map((slide, index) => {
-              if (index !== activeSlide) return null;
-              
-              const hasContent = slide.title && slide.title.trim().length > 0;
-              
-              return (
-                <motion.div
-                  key={slide.id}
-                  initial={{ opacity: 0, scale: 1.02 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.6, ease: 'easeInOut' }}
-                  className="absolute inset-0 w-full h-full"
-                >
-                  {/* Backdrop Cover Image */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent z-[2]" />
-                  <img 
-                    src={slide.imageUrl} 
-                    alt={slide.title || "আহরোণ ক্যাম্পেইন"} 
-                    className="w-full h-full object-cover brightness-100 object-center"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1543339308-43e59d6b73a6?w=1600&q=80';
-                    }}
-                  />
+          {loading && sliders.length === 0 ? (
+            <div className="absolute inset-0 bg-slate-200 animate-pulse" />
+          ) : (
+            <>
+              {/* Transition wrapper */}
+              <AnimatePresence mode="wait">
+                {sliders.map((slide, index) => {
+                  if (index !== activeSlide) return null;
+                  
+                  const hasContent = slide.title && slide.title.trim().length > 0;
+                  
+                  return (
+                    <motion.div
+                      key={slide.id}
+                      initial={{ opacity: 0, scale: 1.02 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.98 }}
+                      transition={{ duration: 0.6, ease: 'easeInOut' }}
+                      className="absolute inset-0 w-full h-full"
+                    >
+                      {/* Backdrop Cover Image */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent z-[2]" />
+                      <img 
+                        src={slide.imageUrl} 
+                        alt={slide.title || "আহরোণ ক্যাম্পেইন"} 
+                        className="w-full h-full object-cover brightness-100 object-center"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1543339308-43e59d6b73a6?w=1600&q=80';
+                        }}
+                      />
 
-                  {/* Text Overlay - Only render if title is provided */}
-                  {hasContent && (
-                    <div className="absolute inset-0 z-[3] flex flex-col justify-end p-4 xs:p-6 sm:p-10 md:p-16 lg:p-20 text-white max-w-4xl">
-                      <motion.div
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.15 }}
-                        className="w-fit bg-emerald-500/20 backdrop-blur-md px-2.5 py-1 md:px-4 md:py-1.5 rounded-full border border-emerald-500/30 text-emerald-300 text-[8px] sm:text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-1.5 sm:mb-3 md:mb-5 flex items-center gap-1.5"
-                      >
-                        <Sparkles size={10} className="text-emerald-400" />
-                        <span>আহরোণ প্রিমিয়াম ক্যাম্পেইন</span>
-                      </motion.div>
+                      {/* Text Overlay - Only render if title is provided */}
+                      {hasContent && (
+                        <div className="absolute inset-0 z-[3] flex flex-col justify-end p-4 xs:p-6 sm:p-10 md:p-16 lg:p-20 text-white max-w-4xl">
+                          <motion.div
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.15 }}
+                            className="w-fit bg-emerald-500/20 backdrop-blur-md px-2.5 py-1 md:px-4 md:py-1.5 rounded-full border border-emerald-500/30 text-emerald-300 text-[8px] sm:text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mb-1.5 sm:mb-3 md:mb-5 flex items-center gap-1.5"
+                          >
+                            <Sparkles size={10} className="text-emerald-400" />
+                            <span>আহরোণ প্রিমিয়াম ক্যাম্পেইন</span>
+                          </motion.div>
 
-                      <motion.h2 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.25, duration: 0.5 }}
-                        className="text-base xs:text-lg sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-display font-black text-white leading-[1.25] md:leading-[1.15] mb-1 sm:mb-3 md:mb-5 tracking-tight font-sans drop-shadow-md"
-                      >
-                        {slide.title}
-                      </motion.h2>
+                          <motion.h2 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.25, duration: 0.5 }}
+                            className="text-base xs:text-lg sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-display font-black text-white leading-[1.25] md:leading-[1.15] mb-1 sm:mb-3 md:mb-5 tracking-tight font-sans drop-shadow-md"
+                          >
+                            {slide.title}
+                          </motion.h2>
 
-                      {slide.description && (
-                        <motion.p
-                          initial={{ opacity: 0, y: 15 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.35 }}
-                          className="text-white/85 text-[9px] xs:text-[11px] sm:text-xs md:text-base max-w-xl leading-relaxed mb-2.5 sm:mb-5 md:mb-8 font-light line-clamp-1 xs:line-clamp-2 md:line-clamp-none"
-                        >
-                          {slide.description}
-                        </motion.p>
+                          {slide.description && (
+                            <motion.p
+                              initial={{ opacity: 0, y: 15 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.35 }}
+                              className="text-white/85 text-[9px] xs:text-[11px] sm:text-xs md:text-base max-w-xl leading-relaxed mb-2.5 sm:mb-5 md:mb-8 font-light line-clamp-1 xs:line-clamp-2 md:line-clamp-none"
+                            >
+                              {slide.description}
+                            </motion.p>
+                          )}
+
+                          <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.45 }}
+                            className="flex flex-wrap gap-2"
+                          >
+                            <Link 
+                              to={slide.link || '/category/all'} 
+                              className="bg-emerald-500 text-white px-3.5 py-1.5 sm:px-6 sm:py-3.5 rounded-lg sm:rounded-2xl font-bold text-[9px] sm:text-xs md:text-sm hover:bg-white hover:text-emerald-600 transition-all shadow-xl shadow-emerald-500/10 flex items-center gap-1 sm:gap-2 active:scale-95"
+                            >
+                              আসল স্বাদ দেখুন
+                              <ArrowRight size={12} className="sm:w-4 sm:h-4" />
+                            </Link>
+                          </motion.div>
+                        </div>
                       )}
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
 
-                      <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.45 }}
-                        className="flex flex-wrap gap-2"
-                      >
-                        <Link 
-                          to={slide.link || '/category/all'} 
-                          className="bg-emerald-500 text-white px-3.5 py-1.5 sm:px-6 sm:py-3.5 rounded-lg sm:rounded-2xl font-bold text-[9px] sm:text-xs md:text-sm hover:bg-white hover:text-emerald-600 transition-all shadow-xl shadow-emerald-500/10 flex items-center gap-1 sm:gap-2 active:scale-95"
-                        >
-                          আসল স্বাদ দেখুন
-                          <ArrowRight size={12} className="sm:w-4 sm:h-4" />
-                        </Link>
-                      </motion.div>
-                    </div>
-                  )}
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+              {/* Left Arrow */}
+              <button 
+                onClick={handlePrevSlide}
+                className="hidden md:flex absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-[5] w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 border border-white/15"
+              >
+                <ChevronLeft size={22} />
+              </button>
 
-          {/* Left Arrow */}
-          <button 
-            onClick={handlePrevSlide}
-            className="hidden md:flex absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-[5] w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 border border-white/15"
-          >
-            <ChevronLeft size={22} />
-          </button>
+              {/* Right Arrow */}
+              <button 
+                onClick={handleNextSlide}
+                className="hidden md:flex absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-[5] w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 border border-white/15"
+              >
+                <ChevronRight size={22} />
+              </button>
 
-          {/* Right Arrow */}
-          <button 
-            onClick={handleNextSlide}
-            className="hidden md:flex absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-[5] w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 border border-white/15"
-          >
-            <ChevronRight size={22} />
-          </button>
+              {/* Dot indicators */}
+              <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-10 flex gap-1.5 sm:gap-2.5 bg-slate-950/40 backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-white/10">
+                {sliders.map((_, idx) => (
+                  <button
+                    key={`dot-${idx}`}
+                    onClick={() => setActiveSlide(idx)}
+                    className={cn(
+                      "w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300",
+                      activeSlide === idx 
+                        ? "bg-emerald-400 w-4 sm:w-6" 
+                        : "bg-white/50 hover:bg-white"
+                    )}
+                  />
+                ))}
+              </div>
 
-          {/* Dot indicators */}
-          <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-10 flex gap-1.5 sm:gap-2.5 bg-slate-950/40 backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-white/10">
-            {sliders.map((_, idx) => (
-              <button
-                key={`dot-${idx}`}
-                onClick={() => setActiveSlide(idx)}
-                className={cn(
-                  "w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300",
-                  activeSlide === idx 
-                    ? "bg-emerald-400 w-4 sm:w-6" 
-                    : "bg-white/50 hover:bg-white"
-                )}
-              />
-            ))}
-          </div>
-
-          {/* Progress bar ticker */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 z-[5]">
-            <motion.div 
-              key={`bar-${activeSlide}`}
-              initial={{ width: '0%' }}
-              animate={{ width: isCarouselHovered ? '0%' : '100%' }}
-              transition={{ duration: 5.5, ease: 'linear' }}
-              className="h-full bg-emerald-400"
-            />
-          </div>
+              {/* Progress bar ticker */}
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 z-[5]">
+                <motion.div 
+                  key={`bar-${activeSlide}`}
+                  initial={{ width: '0%' }}
+                  animate={{ width: isCarouselHovered ? '0%' : '100%' }}
+                  transition={{ duration: 3, ease: 'linear' }}
+                  className="h-full bg-emerald-400"
+                />
+              </div>
+            </>
+          )}
         </div>
       </section>
       )}
