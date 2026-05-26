@@ -2,5 +2,5 @@
   "name": "আহরোণ",
   "description": "আহরোণ (Aahron) is a world-class e-commerce platform featuring AI-powered personalization, real-time order tracking with Google Maps, advanced search filtering, and interactive social proof. Designed for a premium, 'alive' experience with subtle micro-interactions and a robust loyalty reward program.",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

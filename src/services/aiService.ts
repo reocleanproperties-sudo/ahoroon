@@ -1,42 +1,22 @@
-import { GoogleGenAI } from "@google/genai";
-
-let ai: GoogleGenAI | null = null;
-try {
-  if (process.env.GEMINI_API_KEY) {
-    ai = new GoogleGenAI({ 
-      apiKey: process.env.GEMINI_API_KEY as string,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        }
-      }
-    });
-  }
-} catch (e) {
-  console.warn("Failed to initialize GoogleGenAI", e);
-}
-
 export const aiService = {
   async generateProductDescription(productName: string, category: string) {
     if (!productName) return '';
     
     try {
-      if (!process.env.GEMINI_API_KEY) {
-        throw new Error("GEMINI_API_KEY is not configured");
-      }
-
-      if (!ai) {
-        throw new Error("Gemini AI instance is null");
-      }
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
-        contents: `Generate a short, compelling product description in Bengali (বাংলা) for a product named "${productName}" in the category "${category}". The description should be engaging and suitable for an e-commerce store. Keep it professional and concise (under 200 words).`,
+      const response = await fetch("/api/generate-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productName, category }),
       });
+      const data = await response.json();
       
-      return response.text?.trim() || '';
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate description");
+      }
+      
+      return data.description.trim() || '';
     } catch (error) {
-      console.warn('Gemini description generation failed (using local graceful fallback):', error);
+      console.warn('AI description generation failed (using local graceful fallback):', error);
       
       // Beautiful local Bengali description generator fallback
       const templates = [
