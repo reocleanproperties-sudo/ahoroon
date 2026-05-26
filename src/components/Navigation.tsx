@@ -128,7 +128,7 @@ export const TopNav = () => {
                 key={`${cat.id}-${idx}`}
                 to={`/category/${cat.id}`}
                 className={cn(
-                  "flex items-center gap-1.5 px-4.5 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-100 select-none whitespace-nowrap border shrink-0 transform-gpu active:translate-y-[2.5px] active:border-b-[1px]",
+                  "flex items-center gap-1.5 px-4.5 py-2 rounded-full text-sm font-semibold transition-all duration-100 select-none whitespace-nowrap border shrink-0 transform-gpu active:translate-y-[2.5px] active:border-b-[1px]",
                   appliedStyle
                 )}
               >

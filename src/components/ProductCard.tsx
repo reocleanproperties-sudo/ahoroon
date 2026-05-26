@@ -20,15 +20,19 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     >
       <Link to={`/product/${product.id}`} className="block">
         <div className="relative aspect-square overflow-hidden rounded-3xl bg-gray-100 mb-3">
-          <img 
-            src={product.image} 
-            alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            referrerPolicy="no-referrer"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = 'https://placehold.co/400x400?text=' + encodeURIComponent(product.name);
-            }}
-          />
+            {product.image ? (
+              <img 
+                src={product.image} 
+                alt={product.name}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://placehold.co/400x400?text=' + encodeURIComponent(product.name);
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 text-xs">ছবি নেই</div>
+            )}
           {product.isFlashSale && (
             <div className="absolute top-3 left-3 bg-white/90 backdrop-blur px-2 py-1 rounded-full text-[10px] font-bold text-primary shadow-sm uppercase tracking-wider">
               -{product.discount}%
