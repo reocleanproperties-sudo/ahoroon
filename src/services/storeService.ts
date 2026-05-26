@@ -86,6 +86,18 @@ export const storeService = {
     return data;
   },
 
+  async getProduct(id: string) {
+    if (checkFirestoreDisabled()) {
+      return null;
+    }
+    const docRef = doc(db, 'products', id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() } as Product;
+    }
+    return null;
+  },
+
   async getFlashSaleProducts() {
     if (checkFirestoreDisabled()) {
       const cached = localStorage.getItem('flashSaleProducts');
