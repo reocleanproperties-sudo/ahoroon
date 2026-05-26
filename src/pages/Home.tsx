@@ -14,7 +14,8 @@ import {
   TrendingUp,
   Award,
   Newspaper,
-  ExternalLink
+  ExternalLink,
+  X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
@@ -26,140 +27,20 @@ import { Product, Category, SliderImage, Producer, PressCoverage } from '../type
 import { CategoryIcon } from '../components/CategoryIcon';
 import { RecommendedProducts } from '../components/RecommendedProducts';
 
-const FALLBACK_PRODUCERS: Producer[] = [
-  {
-    id: 'prod-1',
-    name: "আব্দুল মজিদ",
-    role: "মধু সংগ্রহকারী, সুন্দরবন",
-    img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&q=80",
-    story: "৩ পুরুষ ধরে তারা সুন্দরবনের খাঁটি মধু সংগ্রহ করেন। তার পরম শ্রদ্ধায় সংগৃহীত আসল মধু পৌঁছে যায় আপনার দোরগোড়ায়।",
-    order: 1
-  },
-  {
-    id: 'prod-2',
-    name: "রাবেয়া বেগম",
-    role: "হাতে তৈরি ঘি কারিগর, পাবনা",
-    img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&q=80",
-    story: "ঐতিহ্যবাহী গাওয়া পদ্ধতিতে নিজস্ব গাভীর খাঁটি দুধ হতে সর বানিয়ে ঘি প্রস্তুত করেন। কোনো রাসায়নিক ও প্রিজারভেটিভ নেই।",
-    order: 2
-  },
-  {
-    id: 'prod-3',
-    name: "করিম চাচা",
-    role: "সরিষা চাষী, মানিকগঞ্জ",
-    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80",
-    story: "নিজে খাঁটি সরিষা বুনে ঘানি ভেঙে প্রাকৃতিক তেল নিষ্কাশন করেন। যে তেলের উগ্র ঝাঁঝ ও সেন্ট রান্নায় এনে দেয় আভিজাত্যের স্পর্শ।",
-    order: 3
-  }
-];
+const FALLBACK_PRODUCERS: Producer[] = [];
 
-const FALLBACK_SLIDERS: SliderImage[] = [
-  {
-    id: 'slider-1',
-    imageUrl: 'https://images.unsplash.com/photo-1543339308-43e59d6b73a6?w=1600&q=80',
-    title: 'মাটির সোঁদা গন্ধে, মমতার স্পর্শে',
-    description: 'গ্রামের কৃষকের ঘাম আর কারিগরের মমতা মাখা খাঁটি পণ্য এখন সরাসরি আপনার দোরগোড়ায়।',
-    link: '/category/all',
-    order: 1,
-  },
-  {
-    id: 'slider-2',
-    imageUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=1600&q=80',
-    title: 'ঐতিহ্যবাহী খাঁটি মশলা',
-    description: 'বিখ্যাত চট্টগ্রামের মেজবানি রান্নার আসল স্বাদ পেতে আমাদের স্পেশাল গোপন মশলা।',
-    link: '/category/spices',
-    order: 2,
-  },
-  {
-    id: 'slider-3',
-    imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e783137?w=1600&q=80',
-    title: 'সুন্দরবনের খাঁটি মধু',
-    description: 'রাঙ্গামাটির গভীর জঙ্গল ও সুন্দরবন থেকে সংগৃহীত খাঁটি মধু, শতভাগ কৃত্রিম উপাদানমুক্ত।',
-    link: '/category/hilly',
-    order: 3,
-  },
-  {
-    id: 'slider-4',
-    imageUrl: 'https://images.unsplash.com/photo-1626132646529-5003375a954e?w=1600&q=80',
-    title: 'উপকূলের তাজা শুঁটকি',
-    description: 'প্রাকৃতিকভাবে শুকানো, কোনো রাসায়নিক ছাড়া তৈরি আসল স্বাদের লইট্টা ও ছুরি শুঁটকি।',
-    link: '/category/shukti',
-    order: 4,
-  },
-  {
-    id: 'slider-5',
-    imageUrl: 'https://images.unsplash.com/photo-1590502593747-42a996133562?w=1600&q=80',
-    title: 'জৈব ও প্রাকৃতিক চাষাবাদ',
-    description: 'আমাদের সকল পণ্য সম্পূর্ণ প্রাকৃতিক উপায়ে উৎপাদিত ও পরম যত্নে সংগৃহীত।',
-    link: '/category/all',
-    order: 5,
-  },
-  {
-    id: 'slider-6',
-    imageUrl: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=1600&q=80',
-    title: 'পাবনার গাওয়া ঘি ও দুগ্ধজাত পণ্য',
-    description: 'ঐতিহ্যবাহী পদ্ধতিতে তৈরি খাঁটি ঘি আপনার খাবারে যোগ করবে অতুলনীয় আভিজাত্য।',
-    link: '/category/tradition',
-    order: 6,
-  },
-  {
-    id: 'slider-7',
-    imageUrl: 'https://images.unsplash.com/photo-1511208687438-2c5a5abb810c?w=1600&q=80',
-    title: 'মানিকগঞ্জের ঘানি-ভাঙা সরিষার তেল',
-    description: 'নিজে ঘানি টেনে বের করা খাঁটি তেলের তীব্র ঝাঁঝ ও মনমাতানো সরিষার সুবাস।',
-    link: '/category/spices',
-    order: 7,
-  },
-  {
-    id: 'slider-8',
-    imageUrl: 'https://images.unsplash.com/photo-1608697138356-dfc0032cc629?w=1600&q=80',
-    title: 'বাংলার ঐতিহ্যবাহী কারুশিল্প',
-    description: 'মমতা ও ঐতিহ্যের ছোঁয়ায় তৈরি খাঁটি দেশীয় মাটির ও বাঁশের তৈজসপত্র ও সাজসজ্জা।',
-    link: '/category/all',
-    order: 8,
-  }
-];
+const FALLBACK_SLIDERS: SliderImage[] = [];
 
-const FALLBACK_PRESS: PressCoverage[] = [
-  {
-    id: 'press-1',
-    source: "প্রথম আলো",
-    title: "খাদ্য ভেজালের ভিড়ে এক অনন্য আস্থার নাম ‘আহরোণ’",
-    excerpt: "সুন্দরবনের গহীন জঙ্গল থেকে শুরু করে পাবনার দুগ্ধ খামার—সব জায়গায় নিজেদের প্রতিনিধির মাধ্যমে শতভাগ খাঁটি ও ভেজালমুক্ত ঐতিহ্যবাহী খাদ্যপণ্য শহরের মানুষের দুয়ারে পৌঁছে দিচ্ছে আহরোণ।",
-    img: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80",
-    link: "https://www.prothomalo.com",
-    date: "জানুয়ারি ১৫, ২০২৬",
-    order: 1
-  },
-  {
-    id: 'press-2',
-    source: "দ্য ডেইলি স্টার",
-    title: "Ahoron: Pure ingredients straight from local farms",
-    excerpt: "By weeding out middle-men and verifying purity at origin, start-up Ahoron is empowering grassroot level honey hunters, ghee masters, and mustard farmers across Bangladesh with fair value.",
-    img: "https://images.unsplash.com/photo-1546422904-90eabf3bac0a?w=800&q=80",
-    link: "https://www.thedailystar.net",
-    date: "মার্চ ০৫, ২০২৬",
-    order: 2
-  },
-  {
-    id: 'press-3',
-    source: "কালের কণ্ঠ",
-    title: "সরিষা ও মধুর আসল স্বাদ ফিরিয়ে আনছে তরুণেরা",
-    excerpt: "নিজস্ব তত্ত্বাবধানে ঘানিভাঙা তেল আর সুন্দরবনের প্রাকৃতিক মধুর অসাধারণ স্বাদ নিয়ে ক্রেতাদের আস্থার জায়গা হয়ে উঠেছে এই উদ্যোগ। তাদের গুনগত মান রক্ষা এবং কারিগরবান্ধব পলিসি সত্যিই অতুলনীয়।",
-    img: "https://images.unsplash.com/photo-1588681664899-f142ff2af9b3?w=800&q=80",
-    link: "https://www.kalerkantho.com",
-    date: "এপ্রিল ২০, ২০২৬",
-    order: 3
-  }
-];
+const FALLBACK_PRESS: PressCoverage[] = [];
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>(STATIC_PRODUCTS);
   const [categories, setCategories] = useState<Category[]>(STATIC_CATEGORIES);
-  const [sliders, setSliders] = useState<SliderImage[]>([]);
-  const [producers, setProducers] = useState<Producer[]>([]);
-  const [press, setPress] = useState<PressCoverage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sliders, setSliders] = useState<SliderImage[]>(FALLBACK_SLIDERS);
+  const [producers, setProducers] = useState<Producer[]>(FALLBACK_PRODUCERS);
+  const [press, setPress] = useState<PressCoverage[]>(FALLBACK_PRESS);
+  const [loading, setLoading] = useState(false);
+  const [selectedPress, setSelectedPress] = useState<PressCoverage | null>(null);
   
   // Carousel States
   const [activeSlide, setActiveSlide] = useState(0);
@@ -179,9 +60,9 @@ export default function Home() {
         
         if (p && p.length > 0) setProducts(p);
         if (c && c.length > 0) setCategories(c);
-        if (s) setSliders(s);
-        if (pr) setProducers(pr);
-        if (ps) setPress(ps);
+        if (s && s.length > 0) setSliders(s);
+        if (pr && pr.length > 0) setProducers(pr);
+        if (ps && ps.length > 0) setPress(ps);
       } catch (e) {
         console.error('Error fetching home data:', e);
       } finally {
@@ -433,13 +314,13 @@ export default function Home() {
               <img 
                 src={producer.img} 
                 alt={producer.name} 
-                className="w-full h-full object-cover grayscale opacity-90 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" 
+                className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105" 
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent p-8 flex flex-col justify-end text-white z-10 transition-colors duration-500">
                 <p className="text-amber-300 font-bold text-xs uppercase tracking-widest mb-1.5">{producer.role}</p>
                 <h3 className="text-xl font-bold mb-3 text-[#6fde03]">{producer.name}</h3>
-                <p className="text-white/80 text-xs leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 line-clamp-3">
+                <p className="text-white/80 text-xs leading-relaxed transition-opacity duration-500 line-clamp-3">
                   {producer.story}
                 </p>
               </div>
@@ -553,15 +434,16 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
-              className="bg-white rounded-3xl overflow-hidden border border-slate-100 hover:border-emerald-500/50 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+              onClick={() => setSelectedPress(item)}
+              className="bg-white rounded-3xl overflow-hidden border border-slate-100 hover:border-emerald-500/50 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group cursor-pointer"
             >
               <div className="space-y-4">
                 {/* News Thumbnail Container */}
-                <div className="aspect-[16/10] overflow-hidden bg-slate-50 relative border-b border-slate-100">
+                <div className="aspect-[16/10] overflow-hidden bg-slate-50 relative border-b border-slate-100 flex items-center justify-center p-4">
                   <img 
                     src={item.img} 
                     alt={item.source} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80';
@@ -586,15 +468,10 @@ export default function Home() {
 
               {item.link && item.link !== '#' && (
                 <div className="px-6 pb-6 pt-2 border-t border-slate-50/50">
-                  <a 
-                    href={item.link} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-emerald-600 hover:text-emerald-700 font-bold text-xs flex items-center gap-1 hover:underline"
-                  >
-                    <span>मूल खबरটি পড়ুন</span>
-                    <ExternalLink size={12} />
-                  </a>
+                  <span className="text-emerald-600 hover:text-emerald-700 font-bold text-xs flex items-center gap-1 hover:underline">
+                    <span>খবরটি বিস্তারিত পড়ুন</span>
+                    <ArrowRight size={12} />
+                  </span>
                 </div>
               )}
             </motion.div>
@@ -653,6 +530,77 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* Press Coverage Modal */}
+      <AnimatePresence>
+        {selectedPress && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm shadow-[0_0_50px_rgba(0,0,0,0.1)]"
+            onClick={() => setSelectedPress(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-[2rem] shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col relative"
+            >
+              <button
+                onClick={() => setSelectedPress(null)}
+                className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur-md text-slate-800 rounded-full hover:bg-slate-200 transition-colors shadow-sm"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="overflow-y-auto">
+                <div className="bg-slate-50 w-full p-6 flex flex-col items-center justify-center border-b border-slate-100">
+                  <img 
+                    src={selectedPress.img} 
+                    alt={selectedPress.source} 
+                    className="max-h-[300px] w-auto object-contain rounded-xl shadow-sm"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80';
+                    }}
+                  />
+                  <div className="mt-4 bg-emerald-100 text-emerald-800 font-bold text-xs uppercase tracking-widest px-4 py-1.5 rounded-full">
+                    {selectedPress.source}
+                  </div>
+                </div>
+
+                <div className="p-6 md:p-10 space-y-6">
+                  <span className="text-sm font-medium text-slate-400 block">{selectedPress.date}</span>
+                  <h2 className="text-2xl md:text-3xl font-display font-black text-slate-900 leading-tight">
+                    {selectedPress.title}
+                  </h2>
+                  <div className="prose prose-slate prose-emerald font-serif text-slate-700 leading-relaxed max-w-none">
+                    {selectedPress.excerpt.split('\n').map((paragraph, i) => (
+                      <p key={i} className="mb-4">{paragraph}</p>
+                    ))}
+                  </div>
+
+                  {selectedPress.link && selectedPress.link !== '#' && (
+                    <div className="pt-6 border-t border-slate-100">
+                      <a 
+                        href={selectedPress.link} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white px-6 py-3 rounded-xl font-bold transition-colors"
+                      >
+                        <span>মূল ওয়েবসাইটে খবরটি পড়ুন</span>
+                        <ExternalLink size={16} />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

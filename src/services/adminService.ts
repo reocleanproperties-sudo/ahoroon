@@ -35,8 +35,13 @@ interface FirestoreErrorInfo {
 }
 
 function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  if (errorMessage.includes('resource-exhausted') || errorMessage.includes('Quota limit exceeded')) {
+    localStorage.setItem('firestoreDisabled', 'true');
+  }
+
   const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    error: errorMessage,
     authInfo: {
       userId: auth.currentUser?.uid,
       email: auth.currentUser?.email,
@@ -47,6 +52,10 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
   };
   console.error('Firestore Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
+}
+
+function checkFirestoreDisabled() {
+  return localStorage.getItem('firestoreDisabled') === 'true';
 }
 
 export const adminService = {
@@ -64,11 +73,17 @@ export const adminService = {
 
   // Products
   async getProducts() {
+    if (checkFirestoreDisabled()) {
+      const cached = localStorage.getItem('products');
+      return cached ? JSON.parse(cached) : [];
+    }
     const path = 'products';
     try {
       const q = query(collection(db, path), orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+      localStorage.setItem('products', JSON.stringify(data));
+      return data;
     } catch (e) {
       handleFirestoreError(e, OperationType.LIST, path);
     }
@@ -111,10 +126,16 @@ export const adminService = {
 
   // Categories
   async getCategories() {
+    if (checkFirestoreDisabled()) {
+      const cached = localStorage.getItem('categories');
+      return cached ? JSON.parse(cached) : [];
+    }
     const path = 'categories';
     try {
       const snapshot = await getDocs(collection(db, path));
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
+      localStorage.setItem('categories', JSON.stringify(data));
+      return data;
     } catch (e) {
       handleFirestoreError(e, OperationType.LIST, path);
     }
@@ -156,11 +177,17 @@ export const adminService = {
 
   // Orders
   async getOrders() {
+    if (checkFirestoreDisabled()) {
+        const cached = localStorage.getItem('orders');
+        return cached ? JSON.parse(cached) : [];
+    }
     const path = 'orders';
     try {
       const q = query(collection(db, path), orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      localStorage.setItem('orders', JSON.stringify(data));
+      return data;
     } catch (e) {
       handleFirestoreError(e, OperationType.LIST, path);
     }
@@ -180,11 +207,17 @@ export const adminService = {
 
   // Users Management
   async getUsers() {
+    if (checkFirestoreDisabled()) {
+        const cached = localStorage.getItem('users');
+        return cached ? JSON.parse(cached) : [];
+    }
     const path = 'users';
     try {
       const q = query(collection(db, path), orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AppUser));
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AppUser));
+      localStorage.setItem('users', JSON.stringify(data));
+      return data;
     } catch (e) {
       handleFirestoreError(e, OperationType.LIST, path);
     }
@@ -225,11 +258,17 @@ export const adminService = {
 
   // Manual Invoices
   async getManualInvoices() {
+    if (checkFirestoreDisabled()) {
+        const cached = localStorage.getItem('manualInvoices');
+        return cached ? JSON.parse(cached) : [];
+    }
     const path = 'manualInvoices';
     try {
       const q = query(collection(db, path), orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ManualInvoice));
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ManualInvoice));
+      localStorage.setItem('manualInvoices', JSON.stringify(data));
+      return data;
     } catch (e) {
       handleFirestoreError(e, OperationType.LIST, path);
     }
@@ -270,11 +309,16 @@ export const adminService = {
 
   // Sliders
   async getSliders() {
+    const cached = localStorage.getItem('sliders');
+    if (cached) return JSON.parse(cached) as any[];
+
     const path = 'sliders';
     try {
       const q = query(collection(db, path), orderBy('order', 'asc'));
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+      localStorage.setItem('sliders', JSON.stringify(data));
+      return data;
     } catch (e) {
       handleFirestoreError(e, OperationType.LIST, path);
     }
@@ -306,6 +350,15 @@ export const adminService = {
   },
 
   async deleteSlider(id: string) {
+    if (checkFirestoreDisabled()) {
+      const cached = localStorage.getItem('sliders');
+      if (cached) {
+        const sliders = JSON.parse(cached);
+        const filtered = sliders.filter((s: any) => s.id !== id);
+        localStorage.setItem('sliders', JSON.stringify(filtered));
+      }
+      return;
+    }
     const path = `sliders/${id}`;
     try {
       await deleteDoc(doc(db, 'sliders', id));
@@ -316,11 +369,16 @@ export const adminService = {
 
   // Producers
   async getProducers() {
+    const cached = localStorage.getItem('producers');
+    if (cached) return JSON.parse(cached) as any[];
+
     const path = 'producers';
     try {
       const q = query(collection(db, path), orderBy('order', 'asc'));
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+      localStorage.setItem('producers', JSON.stringify(data));
+      return data;
     } catch (e) {
       handleFirestoreError(e, OperationType.LIST, path);
     }
@@ -362,11 +420,16 @@ export const adminService = {
 
   // Press / News Coverages
   async getPress() {
+    const cached = localStorage.getItem('press');
+    if (cached) return JSON.parse(cached) as any[];
+
     const path = 'press';
     try {
       const q = query(collection(db, path), orderBy('order', 'asc'));
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+      localStorage.setItem('press', JSON.stringify(data));
+      return data;
     } catch (e) {
       handleFirestoreError(e, OperationType.LIST, path);
     }
@@ -447,6 +510,31 @@ export const adminService = {
       }
     } catch (e) {
       handleFirestoreError(e, OperationType.WRITE, path);
+    }
+  },
+
+  async factoryReset() {
+    const collectionsToClear = [
+      'products',
+      'categories',
+      'orders',
+      'manualInvoices',
+      'sliders',
+      'producers',
+      'press'
+    ];
+    
+    try {
+      for (const collName of collectionsToClear) {
+        const snapshot = await getDocs(collection(db, collName));
+        const deletePromises = snapshot.docs.map(docSnap => deleteDoc(doc(db, collName, docSnap.id)));
+        await Promise.all(deletePromises);
+      }
+      return true;
+    } catch (error) {
+      console.error('Factory reset failed:', error);
+      handleFirestoreError(error, OperationType.DELETE, 'multiple-collections');
+      return false;
     }
   }
 };

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth, db } from '../lib/firebase';
-import { doc, getDoc, setDoc, updateDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 interface LoyaltyData {
   points: number;
@@ -24,30 +24,28 @@ export const LoyaltyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
 
   useEffect(() => {
-    const unsub = auth.onAuthStateChanged((user) => {
+    const unsub = auth.onAuthStateChanged(async (user) => {
       if (user) {
         const userRef = doc(db, 'users', user.uid);
-        const unsubSession = onSnapshot(userRef, (snapshot) => {
-          if (snapshot.exists()) {
-            const data = snapshot.data();
-            setLoyalty({
-              points: data.points || 0,
-              tier: data.tier || 'Bronze',
-              lifetimeSpent: data.lifetimeSpent || 0
-            });
-          } else {
-            // Initialize user data if doesn't exist
-            setDoc(userRef, {
-              email: user.email || '',
-              points: 0,
-              tier: 'Bronze',
-              lifetimeSpent: 0,
-              role: 'viewer',
-              createdAt: serverTimestamp()
-            });
-          }
-        });
-        return unsubSession;
+        const snapshot = await getDoc(userRef);
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          setLoyalty({
+            points: data.points || 0,
+            tier: data.tier || 'Bronze',
+            lifetimeSpent: data.lifetimeSpent || 0
+          });
+        } else {
+          // Initialize user data if doesn't exist
+          setDoc(userRef, {
+            email: user.email || '',
+            points: 0,
+            tier: 'Bronze',
+            lifetimeSpent: 0,
+            role: 'viewer',
+            createdAt: serverTimestamp()
+          });
+        }
       } else {
         // Reset for guest
         setLoyalty({ points: 0, tier: 'Bronze', lifetimeSpent: 0 });

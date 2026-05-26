@@ -182,30 +182,59 @@ export default function AdminSettings() {
 
         <div className="space-y-4 pt-6 border-t border-gray-100 mt-6">
           <label className="block text-sm font-medium text-gray-700">System Utilities</label>
-          <div className="flex items-center justify-between bg-red-50 p-6 rounded-2xl border border-red-100">
-            <div>
-              <p className="font-bold text-red-900">Clear Cache & Unused Images</p>
-              <p className="text-sm text-red-700/80 mt-1">
-                Deletes unused image data from the local browser storage while preserving your current uploaded logos and cart data.
-              </p>
-            </div>
-            <button
-              onClick={() => {
-                const preserveKeys = ['siteLogo', 'siteFooterLogo', 'cart_items_v1']; // Example keys to keep
-                const keysToRemove = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                  const key = localStorage.key(i);
-                  if (key && !preserveKeys.includes(key) && !key.startsWith('firebase:')) {
-                    keysToRemove.push(key);
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between bg-orange-50 p-6 rounded-2xl border border-orange-100">
+              <div>
+                <p className="font-bold text-orange-900">Clear Cache & Unused Images</p>
+                <p className="text-sm text-orange-700/80 mt-1">
+                  Deletes unused image data from the local browser storage while preserving your current uploaded logos and cart data.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  const preserveKeys = ['siteLogo', 'siteFooterLogo', 'cart_items_v1'];
+                  const keysToRemove = [];
+                  for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && !preserveKeys.includes(key) && !key.startsWith('firebase:')) {
+                      keysToRemove.push(key);
+                    }
                   }
-                }
-                keysToRemove.forEach(k => localStorage.removeItem(k));
-                alert('Local cache has been cleared successfully.');
-              }}
-              className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shrink-0 shadow-lg shadow-red-200"
-            >
-              Clear Cache
-            </button>
+                  keysToRemove.forEach(k => localStorage.removeItem(k));
+                  alert('Local cache has been cleared successfully.');
+                }}
+                className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-colors shrink-0 shadow-lg shadow-orange-200"
+              >
+                Clear Cache
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between bg-red-50 p-6 rounded-2xl border border-red-100">
+              <div>
+                <p className="font-bold text-red-900">Wipe Full Database</p>
+                <p className="text-sm text-red-700/80 mt-1">
+                  WARNING: This will permanently delete ALL data (Products, Categories, Sliders, Producers, Press, etc). This cannot be undone.
+                </p>
+              </div>
+              <button
+                onClick={async () => {
+                  if (window.confirm("Are you ABSOLUTELY sure you want to completely erase the database? All your uploaded products will be gone.")) {
+                    if (window.confirm("Double checking: DELETE EVERYTHING?")) {
+                      const success = await adminService.factoryReset();
+                      if (success) {
+                        alert('Database wiped completely. The website is now clean.');
+                        window.location.reload();
+                      } else {
+                        alert('Failed to drop the database. See console for details.');
+                      }
+                    }
+                  }
+                }}
+                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shrink-0 shadow-lg shadow-red-200"
+              >
+                Factory Reset
+              </button>
+            </div>
           </div>
         </div>
       </div>

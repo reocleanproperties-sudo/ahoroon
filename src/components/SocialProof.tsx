@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShoppingBag } from 'lucide-react';
 import { db } from '../lib/firebase';
-import { collection, query, limit, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, limit, orderBy } from 'firebase/firestore';
 
 interface RecentActivity {
   id: string;
@@ -46,25 +46,10 @@ export const SocialProof = () => {
     }, 15000);
 
     // Also try to listen to real public activity if collection exists
-    const q = query(collection(db, 'public_activity'), orderBy('createdAt', 'desc'), limit(1));
-    const unsub = onSnapshot(q, (snapshot) => {
-      if (!snapshot.empty) {
-        const doc = snapshot.docs[0];
-        const data = doc.data();
-        setActivity({
-          id: doc.id,
-          userName: data.userName || "Someone",
-          productName: data.productName || "a product",
-          time: "just now"
-        });
-        setIsVisible(true);
-        setTimeout(() => setIsVisible(false), 5000);
-      }
-    });
+    // (Disabled to save Firestore reads due to quota limits)
 
     return () => {
       clearInterval(interval);
-      unsub();
     };
   }, []);
 

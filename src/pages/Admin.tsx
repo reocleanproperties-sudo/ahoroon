@@ -161,8 +161,9 @@ export default function Admin() {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      alert('Login Error: ' + error.message + '\n\nPlease ensure this domain is added to Authorized Domains in Firebase Authentication settings.');
     }
   };
 
