@@ -133,7 +133,10 @@ export const adminService = {
     const path = 'categories';
     try {
       const snapshot = await getDocs(collection(db, path));
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
+      const data = snapshot.docs.map(doc => {
+        const { id, ...rest } = doc.data() as Category;
+        return { id: doc.id, ...rest };
+      });
       localStorage.setItem('categories', JSON.stringify(data));
       return data;
     } catch (e) {
@@ -148,6 +151,7 @@ export const adminService = {
         ...category,
         createdAt: serverTimestamp(),
       });
+      localStorage.removeItem('categories');
       return docRef.id;
     } catch (e) {
       handleFirestoreError(e, OperationType.CREATE, path);
@@ -161,6 +165,7 @@ export const adminService = {
         ...category,
         updatedAt: serverTimestamp(),
       });
+      localStorage.removeItem('categories');
     } catch (e) {
       handleFirestoreError(e, OperationType.UPDATE, path);
     }
@@ -170,8 +175,23 @@ export const adminService = {
     const path = `categories/${id}`;
     try {
       await deleteDoc(doc(db, 'categories', id));
+      localStorage.removeItem('categories');
     } catch (e) {
       handleFirestoreError(e, OperationType.DELETE, path);
+    }
+  },
+
+  async wipeCategories() {
+    const path = 'categories';
+    try {
+      const snapshot = await getDocs(collection(db, path));
+      const deletePromises = snapshot.docs.map(docSnap => deleteDoc(doc(db, path, docSnap.id)));
+      await Promise.all(deletePromises);
+      localStorage.removeItem('categories');
+      return true;
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, path);
+      return false;
     }
   },
 
@@ -331,6 +351,7 @@ export const adminService = {
         ...slider,
         createdAt: serverTimestamp(),
       });
+      localStorage.removeItem('sliders');
       return docRef.id;
     } catch (e) {
       handleFirestoreError(e, OperationType.CREATE, path);
@@ -344,6 +365,7 @@ export const adminService = {
         ...slider,
         updatedAt: serverTimestamp(),
       });
+      localStorage.removeItem('sliders');
     } catch (e) {
       handleFirestoreError(e, OperationType.UPDATE, path);
     }
@@ -362,6 +384,7 @@ export const adminService = {
     const path = `sliders/${id}`;
     try {
       await deleteDoc(doc(db, 'sliders', id));
+      localStorage.removeItem('sliders');
     } catch (e) {
       handleFirestoreError(e, OperationType.DELETE, path);
     }

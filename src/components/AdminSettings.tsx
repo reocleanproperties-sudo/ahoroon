@@ -7,7 +7,10 @@ export default function AdminSettings() {
   const [logoUrl, setLogoUrl] = useState('');
   const [footerLogoUrl, setFooterLogoUrl] = useState('');
   const [loading, setLoading] = useState(false);
+// ... inside the AdminSettings component
+
   const [saving, setSaving] = useState(false);
+  const [seeding, setSeeding] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -29,6 +32,7 @@ export default function AdminSettings() {
       setLoading(false);
     }
   };
+
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, isFooter: boolean = false) => {
     const file = e.target.files?.[0];
@@ -206,6 +210,84 @@ export default function AdminSettings() {
                 className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-colors shrink-0 shadow-lg shadow-orange-200"
               >
                 Clear Cache
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between bg-green-50 p-6 rounded-2xl border border-green-100 mt-6">
+              <div>
+                <p className="font-bold text-green-900">Seed Categories</p>
+                <p className="text-sm text-green-700/80 mt-1">
+                  Adds new categories to the database.
+                </p>
+              </div>
+              <button
+                onClick={async () => {
+                  const categories = [
+                    { name: 'নিরাপদ প্রাকৃতিক সার', icon: 'Leaf' },
+                    { name: 'নিরাপদ আবাদের চাল', icon: 'Wheat' },
+                    { name: 'নিরাপদ আবাদের দেশি ডাল ও বিচি', icon: 'Bean' },
+                    { name: 'নিরাপদ আবাদের দেশি মশলা', icon: 'Flame' },
+                    { name: 'নিরাপদ ভোজ্য তেল', icon: 'Droplets' },
+                    { name: 'নিরাপদ আবাদের পাহাড়ি ফল এবং সবজী', icon: 'Apple' },
+                    { name: 'ময়দা ও ছাতু আইটেম', icon: 'Wheat' },
+                    { name: 'দুগ্ধজাত পন্য', icon: 'Milk' },
+                    { name: 'প্রাকৃতিক মিষ্টি', icon: 'Candy' },
+                    { name: 'প্রাকৃতিক নির্যাস', icon: 'FlaskConical' },
+                    { name: 'আদরের শিশুদের খাদ্য', icon: 'Baby' },
+                    { name: 'প্রাকৃতিক গুল্মলতার পুনর্জীবনদায়ী প্রাচীন প্রতিকার', icon: 'Sprout' },
+                    { name: 'নিরাপদ ড্রাই ফিশ', icon: 'Fish' },
+                    { name: 'নিরাপদ তরতাজা আমিষ', icon: 'Drumstick' },
+                    { name: 'অন্যান্য', icon: 'MoreHorizontal' },
+                  ];
+                  setSeeding(true);
+                  try {
+                    for (const cat of categories) {
+                      await adminService.addCategory({ 
+                        name: cat.name,
+                        icon: cat.icon
+                      });
+                    }
+                    alert('Categories added successfully!');
+                  } catch (err) {
+                    console.error(err);
+                    alert('Failed to add categories');
+                  } finally {
+                    setSeeding(false);
+                  }
+                }}
+                disabled={seeding}
+                className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors shrink-0 shadow-lg shadow-green-200"
+              >
+                {seeding ? 'Adding...' : 'Add Categories'}
+              </button>
+            </div>
+
+
+
+            <div className="flex items-center justify-between bg-red-50 p-6 rounded-2xl border border-red-100">
+              <div>
+                <p className="font-bold text-red-900">Wipe Categories Only</p>
+                <p className="text-sm text-red-700/80 mt-1">
+                  WARNING: This will permanently delete ALL categories.
+                </p>
+              </div>
+              <button
+                onClick={async () => {
+                  if (window.confirm("Are you sure you want to wipe all categories?")) {
+                    setSeeding(true);
+                    const success = await adminService.wipeCategories();
+                    setSeeding(false);
+                    if (success) {
+                      alert('Categories wiped successfully.');
+                    } else {
+                      alert('Failed to wipe categories.');
+                    }
+                  }
+                }}
+                disabled={seeding}
+                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shrink-0 shadow-lg shadow-red-200"
+              >
+                Wipe Categories
               </button>
             </div>
 

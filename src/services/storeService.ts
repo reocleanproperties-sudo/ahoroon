@@ -78,7 +78,10 @@ export const storeService = {
     if (cached) return JSON.parse(cached) as Category[];
 
     const snapshot = await getDocs(collection(db, 'categories'));
-    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
+    const data = snapshot.docs.map(doc => {
+      const { id, ...rest } = doc.data() as Category;
+      return { id: doc.id, ...rest };
+    });
     localStorage.setItem('categories', JSON.stringify(data));
     return data;
   },

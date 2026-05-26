@@ -91,7 +91,7 @@ export const TopNav = () => {
             <span>সব পণ্য</span>
           </Link>
 
-          {categories.map((cat) => {
+          {categories.map((cat, idx) => {
             const isActive = location.pathname === `/category/${cat.id}`;
             const catStyles: Record<string, { active: string; inactive: string }> = {
               'shukti': {
@@ -125,7 +125,7 @@ export const TopNav = () => {
 
             return (
               <Link
-                key={cat.id}
+                key={`${cat.id}-${idx}`}
                 to={`/category/${cat.id}`}
                 className={cn(
                   "flex items-center gap-1.5 px-4.5 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-100 select-none whitespace-nowrap border shrink-0 transform-gpu active:translate-y-[2.5px] active:border-b-[1px]",
