@@ -436,6 +436,7 @@ export const adminService = {
     const path = `producers/${id}`;
     try {
       await deleteDoc(doc(db, 'producers', id));
+      localStorage.removeItem('producers');
     } catch (e) {
       handleFirestoreError(e, OperationType.DELETE, path);
     }

@@ -1304,6 +1304,7 @@ function ProductModal({ product, onClose, onSave, categories }: any) {
   });
   const [loading, setLoading] = useState(false);
   const [generatingAi, setGeneratingAi] = useState(false);
+  const [generatingImage, setGeneratingImage] = useState(false);
 
   useEffect(() => {
     if (!formData.category && categories.length > 0) {
@@ -1324,6 +1325,32 @@ function ProductModal({ product, onClose, onSave, categories }: any) {
       alert('AI Generation failed. Please try again.');
     } finally {
       setGeneratingAi(false);
+    }
+  };
+
+  const handleGenerateImage = async () => {
+    if (!formData.name) {
+      alert('Please enter a product name first');
+      return;
+    }
+    setGeneratingImage(true);
+    try {
+      const response = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productName: formData.name }),
+      });
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate image");
+      }
+      
+      setFormData(prev => ({ ...prev, image: data.image }));
+    } catch (e: any) {
+      alert(e.message || 'AI Generation failed. Please try again.');
+    } finally {
+      setGeneratingImage(false);
     }
   };
 
@@ -1501,6 +1528,15 @@ function ProductModal({ product, onClose, onSave, categories }: any) {
                     alt="Preview" 
                   />
                 )}
+                <button
+                  type="button"
+                  onClick={handleGenerateImage}
+                  disabled={generatingImage}
+                  className="flex-1 flex items-center justify-center gap-2 p-4 bg-surface rounded-2xl text-primary font-bold text-xs uppercase tracking-wider hover:bg-primary/5 transition-all disabled:opacity-50"
+                >
+                  {generatingImage ? <Sparkles className="animate-spin" size={16} /> : <Sparkles size={16} />}
+                  {generatingImage ? 'Generating...' : 'Generate with AI'}
+                </button>
                 <label className="flex-1 cursor-pointer">
                   <div className="w-full bg-surface p-4 rounded-2xl border-2 border-dashed border-gray-200 hover:border-primary transition-all flex items-center justify-center gap-2 text-gray-400 font-bold text-sm">
                     <Plus size={18} />

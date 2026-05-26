@@ -252,6 +252,16 @@ export default function Home() {
       </section>
       )}
 
+      {/* Why We Are Unique - Value Proposition */}
+      <section className="px-4 md:px-8 max-w-4xl mx-auto py-12 md:py-20 text-center space-y-6">
+        <div className="space-y-3">
+           <h2 className="text-3xl md:text-5xl font-display font-black text-slate-900 tracking-tight">কেন আমরা অনন্য?</h2>
+        </div>
+        <p className="text-slate-600 text-sm md:text-lg leading-relaxed md:leading-loose font-light">
+          বাংলার মাটির সুবাস আর খাঁটি স্বাদের ঐতিহ্যকে ধারণ করে ‘আহরোণ’-এর পথচলা। আমরা বিশ্বাস করি, সুস্থ জীবনের ভিত্তি হলো নিরাপদ ও ভেজালমুক্ত খাদ্য। আর তাই, কোনো মধ্যস্বত্বভোগী ছাড়াই সরাসরি প্রান্তিক কৃষকদের কঠোর পরিশ্রম আর কারিগরদের পরম মমতায় তৈরি শতভাগ খাঁটি পণ্য আমরা পৌঁছে দিচ্ছি সরাসরি আপনার দোরগোড়ায়। সুন্দরবনের গভীর অরণ্যের প্রাকৃতিক মধু, যশোরের ঐতিহ্যবাহী খাঁটি খেজুরের গুড় কিংবা আমাদের নিজস্ব তত্ত্বাবধানে তৈরি সুগন্ধি ঘি—প্রতিটি পণ্যে আপনি পাবেন আদি স্বাদ ও পুষ্টির শতভাগ নিশ্চয়তা। সততা, স্বচ্ছতা আর গুণগত মান বজায় রেখে আগামী প্রজন্মের জন্য একটি সুস্থ ও নিরাপদ খাদ্যের অভ্যাস গড়ে তোলাই ‘আহরোণ’-এর মূল লক্ষ্য।
+        </p>
+      </section>
+
       {/* Featured Products Section - Minimalist / Luxury */}
       <section className="px-4 md:px-8 max-w-7xl mx-auto space-y-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between border-b-2 border-slate-100 pb-6 gap-4">

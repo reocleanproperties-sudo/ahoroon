@@ -5,6 +5,7 @@ import { LoyaltyProvider } from './context/LoyaltyContext';
 import { TopNav, BottomNav } from './components/Navigation';
 import { ScrollToTop } from './components/ScrollToTop';
 import { Footer } from './components/Footer';
+import { WhyUnique } from './components/WhyUnique';
 import Home from './pages/Home';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
@@ -42,6 +43,7 @@ function AppContent() {
       </main>
       {!isAdminPath && (
         <>
+          <WhyUnique />
           <Footer />
           <BottomNav />
         </>
