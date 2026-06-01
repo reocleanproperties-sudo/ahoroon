@@ -53,7 +53,7 @@ export const Footer = () => {
             আহরোণ—বাংলার ঐতিহ্যবাহী খাবারকে ভেজালমুক্তভাবে আপনার কাছে পৌঁছে দেওয়ার একটি বিশ্বস্ত নাম।
           </p>
           <div className="flex gap-4">
-            <a href="#" className="p-3 bg-[#1877F2] rounded-xl text-white transition-all transform hover:-translate-y-1 hover:brightness-110 shadow-[0_4px_0_0_#0d5ebd,0_10px_10px_-5px_rgba(0,0,0,0.3)] active:translate-y-1 active:shadow-[0_0px_0_0_#0d5ebd,0_0px_0px_-5px_rgba(0,0,0,0.3)] flex items-center justify-center">
+            <a href="https://facebook.com/ahoroonbd" target="_blank" rel="noopener noreferrer" className="p-3 bg-[#1877F2] rounded-xl text-white transition-all transform hover:-translate-y-1 hover:brightness-110 shadow-[0_4px_0_0_#0d5ebd,0_10px_10px_-5px_rgba(0,0,0,0.3)] active:translate-y-1 active:shadow-[0_0px_0_0_#0d5ebd,0_0px_0px_-5px_rgba(0,0,0,0.3)] flex items-center justify-center">
               <Facebook size={22} fill="currentColor" strokeWidth={0} />
             </a>
             <a href="#" className="p-3 bg-gradient-to-tr from-[#fce043] via-[#e6683c] to-[#bc1888] rounded-xl text-white transition-all transform hover:-translate-y-1 hover:brightness-110 shadow-[0_4px_0_0_#9b1471,0_10px_10px_-5px_rgba(0,0,0,0.3)] active:translate-y-1 active:shadow-[0_0px_0_0_#9b1471,0_0px_0px_-5px_rgba(0,0,0,0.3)] flex items-center justify-center">
@@ -90,7 +90,7 @@ export const Footer = () => {
           <ul className="space-y-4 text-sm text-gray-500">
             <li className="flex items-center gap-3">
               <Phone size={16} className="text-primary" />
-              <span>+৮৮০ ১২৩৪ ৫৬৭৮৯০</span>
+              <span>+8801796361024</span>
             </li>
             <li className="flex items-center gap-3">
               <Mail size={16} className="text-primary" />
@@ -98,7 +98,7 @@ export const Footer = () => {
             </li>
             <li className="flex items-center gap-3">
               <MapPin size={16} className="text-primary" />
-              <span>চট্টগ্রাম, বাংলাদেশ</span>
+              <span>Mohammadpur, Bosila, Dhaka, Bangladesh 1207</span>
             </li>
           </ul>
         </div>
