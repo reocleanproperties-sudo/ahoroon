@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -6,7 +6,7 @@ import { ShoppingBag, ChevronLeft, Truck, CreditCard, ShieldCheck, User } from '
 import { useCart } from '../hooks/useCart';
 import { useLoyalty } from '../context/LoyaltyContext';
 import { auth, db } from '../lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 
 export default function Checkout() {
   const { cart, totalPrice: total, clearCart } = useCart();
@@ -19,6 +19,35 @@ export default function Checkout() {
     address: '',
     email: '',
   });
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            setFormData({
+              name: data.name || currentUser.displayName || '',
+              phone: data.phone || '',
+              address: data.address || '',
+              email: data.email || currentUser.email || '',
+            });
+          } else {
+            setFormData(prev => ({
+              ...prev,
+              name: currentUser.displayName || '',
+              email: currentUser.email || '',
+            }));
+          }
+        } catch (err) {
+          console.error("Error loading user profile in checkout:", err);
+        }
+      }
+    };
+    fetchUserData();
+  }, []);
 
   if (cart.length === 0) {
     return (
