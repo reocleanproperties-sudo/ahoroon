@@ -3,6 +3,7 @@ import { Star, ShoppingBag, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Product } from '../types';
 import { useCart } from '../hooks/useCart';
+import { WishlistButton } from './WishlistButton';
 import { cn } from '../lib/utils';
 
 interface ProductCardProps {
@@ -38,6 +39,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               -{product.discount}%
             </div>
           )}
+          <div className="absolute top-3 right-3">
+             <WishlistButton product={product} />
+          </div>
           <button 
             onClick={(e) => {
               e.preventDefault();

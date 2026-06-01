@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Star, ChevronLeft, Heart, ShoppingBag, Truck, ShieldCheck, Minus, Plus, Share2 } from 'lucide-react';
+import { Star, ChevronLeft, ShoppingBag, Truck, ShieldCheck, Minus, Plus, Share2 } from 'lucide-react';
 import { PRODUCTS as STATIC_PRODUCTS } from '../data';
 import { useCart } from '../hooks/useCart';
 import { useState, useEffect } from 'react';
@@ -9,6 +9,7 @@ import { cn } from '../lib/utils';
 import { storeService } from '../services/storeService';
 import { Product, Category } from '../types';
 import { AuthenticityCard } from '../components/AuthenticityCard';
+import { WishlistButton } from '../components/WishlistButton';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -126,9 +127,9 @@ export default function ProductDetail() {
         <button onClick={() => navigate(-1)} className="p-2 bg-gray-50 rounded-2xl tap-feedback">
           <ChevronLeft size={24} />
         </button>
-        <button className="p-2 bg-gray-50 rounded-2xl tap-feedback">
-          <Heart size={20} />
-        </button>
+        <div className="p-2 bg-gray-50 rounded-2xl tap-feedback">
+          <WishlistButton product={product} />
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 lg:grid lg:grid-cols-2 lg:gap-12 lg:items-start pt-4">
@@ -281,9 +282,9 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          <button className="hidden md:flex p-4 rounded-2xl border border-gray-100 text-gray-400 hover:text-primary transition-colors">
-            <Heart size={24} />
-          </button>
+          <div className="hidden md:block">
+            <WishlistButton product={product} className="p-4 border border-gray-100" />
+          </div>
           <div className="flex-1 flex gap-2">
             <motion.button 
               whileTap={{ scale: 0.95 }}

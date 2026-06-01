@@ -10,6 +10,7 @@ import Home from './pages/Home';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Categories from './pages/Categories';
+import Wishlist from './pages/Wishlist';
 import Profile from './pages/Profile';
 import ProductListing from './pages/ProductListing';
 import Checkout from './pages/Checkout';
@@ -35,6 +36,7 @@ function AppContent() {
             <Route path="/order-tracking/:orderId" element={<PageWrapper><OrderTracking /></PageWrapper>} />
             <Route path="/categories" element={<PageWrapper><Categories /></PageWrapper>} />
             <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
+            <Route path="/wishlist" element={<PageWrapper><Wishlist /></PageWrapper>} />
             <Route path="/admin" element={<PageWrapper><Admin /></PageWrapper>} />
             <Route path="/login" element={<Navigate to="/admin" replace />} />
             <Route path="*" element={<PageWrapper><Home /></PageWrapper>} />

@@ -17,7 +17,7 @@ export function WhyUnique() {
       <div className="max-w-6xl mx-auto">
         <h2 className="text-3xl font-sans font-bold text-gray-900 text-center mb-12">🌿 কেন আমরা অনন্য? (Why Ahroroon Is Unique)</h2>
         
-        <p className="text-lg text-gray-700 text-center max-w-3xl mx-auto mb-16 italic">
+        <p className="text-lg text-[#005900] text-center max-w-3xl mx-auto mb-16 italic">
           "বাজারের ভিড়ে খাঁটি আর নিরাপদ পণ্যের সন্ধান পাওয়া যখন মেলা ভার, তখন ‘আহরোণ’ আপনার জন্য নিয়ে এসেছে প্রকৃতির একদম আদি ও অকৃত্রিম স্বাদ। আমরা কোনো কৃত্রিম বা প্রক্রিয়াজাত পণ্য বিক্রি করি না; আমাদের প্রতিটি পণ্য সরাসরি মাটি, পাহাড় এবং বনের গভীর থেকে সংগৃহীত।"
         </p>
 
@@ -26,13 +26,13 @@ export function WhyUnique() {
             <div key={index} className="bg-surface p-6 rounded-2xl hover:shadow-lg transition-shadow">
               <item.icon className="w-10 h-10 text-primary mb-4" />
               <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">{item.text}</p>
+              <p className="text-[#005900] text-sm leading-relaxed">{item.text}</p>
             </div>
           ))}
         </div>
 
         <div className="mt-16 text-center border-t pt-12">
-          <p className="text-lg font-bold text-primary italic">
+          <p className="text-lg font-bold text-[#005900] italic">
             "মাটির সুবাস, কৃষকের ঘাম আর কারিগরের মমতা—এই তিনের সমন্বয়ে ‘আহরোণ’ কেবল একটি ব্র্যান্ড নয়, এটি আপনার পরিবারের সুস্থ ও দীর্ঘায়ু জীবনের এক বিশ্বস্ত সঙ্গী।"
           </p>
         </div>

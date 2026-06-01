@@ -1,13 +1,14 @@
 import { motion } from 'motion/react';
 import { Settings, Package, Heart, Bell, CreditCard, ChevronRight, LogOut, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Profile() {
   const menuItems = [
-    { icon: <Package size={20} />, label: 'My Orders', desc: 'Active and past orders' },
-    { icon: <Heart size={20} />, label: 'Wishlist', desc: 'Saved for later' },
-    { icon: <CreditCard size={20} />, label: 'Payments', desc: 'Secure payment methods' },
-    { icon: <Bell size={20} />, label: 'Notifications', desc: 'Offers and updates' },
-    { icon: <Settings size={20} />, label: 'Account', desc: 'Privacy and security' },
+    { icon: <Package size={20} />, label: 'My Orders', desc: 'Active and past orders', link: '/orders' },
+    { icon: <Heart size={20} />, label: 'Wishlist', desc: 'Saved for later', link: '/wishlist' },
+    { icon: <CreditCard size={20} />, label: 'Payments', desc: 'Secure payment methods', link: '/payments' },
+    { icon: <Bell size={20} />, label: 'Notifications', desc: 'Offers and updates', link: '/notifications' },
+    { icon: <Settings size={20} />, label: 'Account', desc: 'Privacy and security', link: '/account' },
   ];
 
   return (
@@ -45,22 +46,26 @@ export default function Profile() {
         <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-300 ml-2">Personal Settings</h3>
         <div className="space-y-2">
           {menuItems.map((item, idx) => (
-            <motion.button
+            <motion.div
               key={`menu-${idx}`}
               whileHover={{ x: 4 }}
-              className="w-full glass-card p-5 flex items-center justify-between group transition-all hover:border-primary/20"
             >
-              <div className="flex items-center gap-5">
-                <div className="p-3 bg-gray-50 rounded-2xl text-gray-400 font-bold group-hover:bg-primary group-hover:text-white transition-all">
-                  {item.icon}
+              <Link
+                to={item.link}
+                className="w-full glass-card p-5 flex items-center justify-between group transition-all hover:border-primary/20 block"
+              >
+                <div className="flex items-center gap-5">
+                  <div className="p-3 bg-gray-50 rounded-2xl text-gray-400 font-bold group-hover:bg-primary group-hover:text-white transition-all">
+                    {item.icon}
+                  </div>
+                  <div className="text-left">
+                    <p className="font-bold text-gray-900">{item.label}</p>
+                    <p className="text-xs text-gray-400">{item.desc}</p>
+                  </div>
                 </div>
-                <div className="text-left">
-                  <p className="font-bold text-gray-900">{item.label}</p>
-                  <p className="text-xs text-gray-400">{item.desc}</p>
-                </div>
-              </div>
-              <ChevronRight className="text-gray-200 group-hover:text-primary transition-colors" />
-            </motion.button>
+                <ChevronRight className="text-gray-200 group-hover:text-primary transition-colors" />
+              </Link>
+            </motion.div>
           ))}
         </div>
       </div>

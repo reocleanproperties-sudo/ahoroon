@@ -1295,6 +1295,8 @@ function ProductModal({ product, onClose, onSave, categories }: any) {
     description: product?.description || '',
     image: product?.image || '',
     isFlashSale: product?.isFlashSale || false,
+    isPopular: product?.isPopular || false,
+    isFeatured: product?.isFeatured || false,
     discount: product?.discount || 0,
     images: product?.images || [],
     unit: product?.unit || 'pcs',
@@ -1517,6 +1519,29 @@ function ProductModal({ product, onClose, onSave, categories }: any) {
                   <option key={`admin-cat-opt-${c.id || 'opt'}-${idx}`} value={c.id}>{c.name}</option>
                 ))}
               </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Visibility</label>
+              <div className="flex gap-4 pt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={formData.isPopular}
+                    onChange={e => setFormData({...formData, isPopular: e.target.checked})}
+                    className="w-5 h-5 accent-primary"
+                  />
+                  <span className="text-sm font-bold text-gray-700">Popular</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={formData.isFeatured}
+                    onChange={e => setFormData({...formData, isFeatured: e.target.checked})}
+                    className="w-5 h-5 accent-primary"
+                  />
+                  <span className="text-sm font-bold text-gray-700">Featured</span>
+                </label>
+              </div>
             </div>
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Product Image</label>

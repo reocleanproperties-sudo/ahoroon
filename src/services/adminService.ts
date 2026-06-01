@@ -97,6 +97,7 @@ export const adminService = {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
+      localStorage.removeItem('products');
       return docRef.id;
     } catch (e) {
       handleFirestoreError(e, OperationType.CREATE, path);
@@ -110,6 +111,7 @@ export const adminService = {
         ...product,
         updatedAt: serverTimestamp(),
       });
+      localStorage.removeItem('products');
     } catch (e) {
       handleFirestoreError(e, OperationType.UPDATE, path);
     }
@@ -119,6 +121,7 @@ export const adminService = {
     const path = `products/${id}`;
     try {
       await deleteDoc(doc(db, 'products', id));
+      localStorage.removeItem('products');
     } catch (e) {
       handleFirestoreError(e, OperationType.DELETE, path);
     }
@@ -466,6 +469,7 @@ export const adminService = {
         ...press,
         createdAt: serverTimestamp(),
       });
+      localStorage.removeItem('press');
       return docRef.id;
     } catch (e) {
       handleFirestoreError(e, OperationType.CREATE, path);
@@ -479,6 +483,7 @@ export const adminService = {
         ...press,
         updatedAt: serverTimestamp(),
       });
+      localStorage.removeItem('press');
     } catch (e) {
       handleFirestoreError(e, OperationType.UPDATE, path);
     }
@@ -488,6 +493,7 @@ export const adminService = {
     const path = `press/${id}`;
     try {
       await deleteDoc(doc(db, 'press', id));
+      localStorage.removeItem('press');
     } catch (e) {
       handleFirestoreError(e, OperationType.DELETE, path);
     }
