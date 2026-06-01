@@ -16,7 +16,11 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
   return (
     <motion.div 
-      whileHover={{ y: -4 }}
+      initial={{ opacity: 0, y: 15 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      whileHover={{ y: -6 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
       className="group"
     >
       <Link to={`/product/${product.id}`} className="block">

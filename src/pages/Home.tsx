@@ -17,7 +17,7 @@ import {
   ExternalLink,
   X
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect, useRef } from 'react';
@@ -34,6 +34,7 @@ const FALLBACK_SLIDERS: SliderImage[] = [];
 const FALLBACK_PRESS: PressCoverage[] = [];
 
 export default function Home() {
+  const location = useLocation();
   const [products, setProducts] = useState<Product[]>(STATIC_PRODUCTS);
   const [categories, setCategories] = useState<Category[]>(STATIC_CATEGORIES);
   const [sliders, setSliders] = useState<SliderImage[]>(FALLBACK_SLIDERS);
@@ -252,6 +253,45 @@ export default function Home() {
       </section>
       )}
 
+      {/* Category Quick Navigation Row */}
+      <section className="px-4 md:px-8 max-w-7xl mx-auto -mt-12 md:-mt-16">
+        <div id="category-quick-buttons" className="w-full flex flex-wrap items-center gap-2 select-none justify-center py-2">
+          <Link
+            to="/category/all"
+            className={cn(
+              "flex items-center gap-1.5 px-4.5 py-2.5 rounded-full text-xs md:text-sm font-bold uppercase tracking-wider transition-all duration-100 select-none whitespace-nowrap border shrink-0 transform-gpu active:translate-y-[1.5px] active:border-b-[1px]",
+              location.pathname === '/category/all'
+                ? "bg-[#005900] text-white border-[#005900] border-b-[3px] border-b-[#004000] shadow-[0_5px_12px_-3px_rgba(0,89,0,0.35),inset_0_1.5px_2px_rgba(255,255,255,0.4)] md:hover:brightness-110"
+                : "bg-[#005900]/8 text-[#005900] border-[#005900]/15 border-b-[3px] border-b-[#005900]/10 hover:bg-[#005900]/12 hover:text-[#004000]"
+            )}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>সব পণ্য</span>
+          </Link>
+
+          {categories.map((cat, idx) => {
+            const isActive = location.pathname === `/category/${cat.id}`;
+            const appliedStyle = isActive
+              ? "bg-[#005900] text-white border-[#005900] border-b-[3px] border-b-[#004000] shadow-[0_5px_12px_-3px_rgba(0,89,0,0.35),inset_0_1.5px_2px_rgba(255,255,255,0.4)] md:hover:brightness-110"
+              : "bg-[#005900]/8 text-[#005900] border-[#005900]/15 border-b-[3px] border-b-[#005900]/10 hover:bg-[#005900]/12 hover:text-[#004000]";
+
+            return (
+              <Link
+                key={`${cat.id}-${idx}`}
+                to={`/category/${cat.id}`}
+                className={cn(
+                  "flex items-center gap-1.5 px-4.5 py-2.5 rounded-full text-xs md:text-sm font-bold transition-all duration-100 select-none whitespace-nowrap border shrink-0 transform-gpu active:translate-y-[1.5px] active:border-b-[1px]",
+                  appliedStyle
+                )}
+              >
+                <CategoryIcon name={cat.icon} size={13} strokeWidth={2.5} />
+                <span>{cat.name}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
       {/* Featured Products Section - Minimalist / Luxury */}
       <section className="px-4 md:px-8 max-w-7xl mx-auto space-y-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between border-b-2 border-slate-100 pb-6 gap-4">
@@ -361,9 +401,14 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 md:gap-8">
-            {activePopular.map((prod) => (
-              <div 
+            {activePopular.map((prod, idx) => (
+              <motion.div 
                 key={`pop-${prod.id}`}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                whileHover={{ y: -6 }}
+                transition={{ duration: 0.4, delay: idx * 0.05, ease: "easeOut" }}
                 className="group relative bg-white border border-slate-100 rounded-3xl p-4 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
               >
                 <Link to={`/product/${prod.id}`} className="block select-none space-y-4">
@@ -404,7 +449,7 @@ export default function Home() {
                     <ArrowRight size={13} />
                   </Link>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
@@ -487,7 +532,15 @@ export default function Home() {
           { icon: Users, title: "সেরা গ্রাহক মূল্যায়ন", desc: "হাজারো পরিবারের বিশ্বাস" },
           { icon: Award, title: "প্রিমিয়াম প্যাকেটজাত", desc: "অক্ষুণ্ণ পুষ্টিগুণ মান" }
         ].map((item, i) => (
-          <div key={`trust-${i}`} className="bg-white border border-slate-100 p-6.5 rounded-3xl flex flex-col items-center text-center gap-4 hover:shadow-md transition-shadow">
+          <motion.div
+            key={`trust-${i}`}
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            whileHover={{ y: -6, scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 100, damping: 15, delay: i * 0.08 }}
+            className="bg-white border border-slate-100 p-6.5 rounded-3xl flex flex-col items-center text-center gap-4 shadow-sm hover:shadow-[0_20px_40px_-5px_rgba(16,185,129,0.14)] hover:border-emerald-500/20 transition-all duration-300"
+          >
             <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-600">
               <item.icon size={26} strokeWidth={1.5} />
             </div>
@@ -495,7 +548,7 @@ export default function Home() {
               <h4 className="font-bold text-slate-800 text-sm">{item.title}</h4>
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{item.desc}</p>
             </div>
-          </div>
+          </motion.div>
         ))}
       </section>
 
@@ -513,20 +566,29 @@ export default function Home() {
         
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
           {categories.slice(0, 5).map((cat, idx) => (
-            <Link
+            <motion.div
               key={`home-cat-${cat.id || 'cat'}-${idx}`}
-              to={`/category/${cat.id}`}
-              className="flex flex-col items-center gap-3.5 group"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -4 }}
+              transition={{ duration: 0.3, delay: idx * 0.05 }}
+              className="shrink-0"
             >
-              <div className="w-24 h-24 rounded-full flex items-center justify-center transition-all duration-700 bg-white border border-slate-100 group-hover:bg-emerald-500 group-hover:border-emerald-500 group-hover:shadow-xl group-hover:shadow-emerald-500/20 group-hover:-translate-y-1">
-                <div className="text-emerald-600 group-hover:text-white transition-all duration-300 transform group-hover:scale-105">
-                  <CategoryIcon name={cat.icon} size={36} strokeWidth={1.5} />
+              <Link
+                to={`/category/${cat.id}`}
+                className="flex flex-col items-center gap-3.5 group"
+              >
+                <div className="w-24 h-24 rounded-full flex items-center justify-center transition-all duration-700 bg-white border border-slate-100 group-hover:bg-emerald-500 group-hover:border-emerald-500 group-hover:shadow-xl group-hover:shadow-emerald-500/20 group-hover:-translate-y-1">
+                  <div className="text-emerald-600 group-hover:text-white transition-all duration-300 transform group-hover:scale-105">
+                    <CategoryIcon name={cat.icon} size={36} strokeWidth={1.5} />
+                  </div>
                 </div>
-              </div>
-              <span className="text-xs font-black uppercase tracking-widest text-black group-hover:text-black transition-colors text-center font-mono">
-                {cat.name}
-              </span>
-            </Link>
+                <span className="text-xs font-black uppercase tracking-widest text-black transition-colors text-center font-mono">
+                  {cat.name}
+                </span>
+              </Link>
+            </motion.div>
           ))}
         </div>
       </section>
