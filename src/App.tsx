@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { CartProvider } from './hooks/useCart';
 import { LoyaltyProvider } from './context/LoyaltyContext';
@@ -18,6 +18,7 @@ import Checkout from './pages/Checkout';
 import OrderTracking from './pages/OrderTracking';
 import Admin from './pages/Admin';
 import { motion, AnimatePresence } from 'motion/react';
+import { Preloader } from './components/Preloader';
 
 function AppContent() {
   const location = useLocation();
@@ -57,12 +58,17 @@ function AppContent() {
 }
 
 export default function App() {
+  const [isLoaded, setIsLoaded] = useState(false);
+
   return (
     <Router>
       <ScrollToTop />
       <CartProvider>
         <LoyaltyProvider>
-          <AppContent />
+          <AnimatePresence mode="wait">
+            {!isLoaded && <Preloader onComplete={() => setIsLoaded(true)} />}
+          </AnimatePresence>
+          {isLoaded && <AppContent />}
         </LoyaltyProvider>
       </CartProvider>
     </Router>
