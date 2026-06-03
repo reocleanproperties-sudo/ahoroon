@@ -1875,11 +1875,11 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
             </div>
           </div>
 
-          {/* Spacer to push Bottom Bar to bottom */}
-          <div className="flex-1" />
-
-          {/* Bottom Bar */}
-          <div className="py-3 mt-4 border-t border-gray-50 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4 text-center sm:text-left print:flex-row print:justify-between print:mt-0">
+          {/* Bottom Bar - positioned exactly 1 inch below the signature/summary block */}
+          <div 
+            className="py-3 border-t border-gray-50 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4 text-center sm:text-left print:flex-row print:justify-between"
+            style={{ marginTop: '1in' }}
+          >
             <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Official Invoice &copy; {new Date().getFullYear()} Aharon Shopping | MOHAMMADPUR DHAKA</p>
             <p className="text-[9px] font-black text-primary uppercase tracking-widest italic font-sans leading-none">A product of info@ahoron.com</p>
           </div>
