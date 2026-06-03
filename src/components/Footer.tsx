@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Mail, Phone, MapPin, Facebook, Instagram, Twitter } from 'lucide-react';
+import { Mail, Phone, MapPin, Facebook, Instagram, Youtube } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { adminService } from '../services/adminService';
 
@@ -52,15 +52,38 @@ export const Footer = () => {
           <p className="text-gray-500 text-sm leading-relaxed mt-[-29px] mb-6 pl-0 ml-0">
             আহরোণ—বাংলার ঐতিহ্যবাহী খাবারকে ভেজালমুক্তভাবে আপনার কাছে পৌঁছে দেওয়ার একটি বিশ্বস্ত নাম।
           </p>
-          <div className="flex gap-4">
-            <a href="https://facebook.com/ahoroonbd" target="_blank" rel="noopener noreferrer" className="p-3 bg-[#1877F2] rounded-xl text-white transition-all transform hover:-translate-y-1 hover:brightness-110 shadow-[0_4px_0_0_#0d5ebd,0_10px_10px_-5px_rgba(0,0,0,0.3)] active:translate-y-1 active:shadow-[0_0px_0_0_#0d5ebd,0_0px_0px_-5px_rgba(0,0,0,0.3)] flex items-center justify-center">
-              <Facebook size={22} fill="currentColor" strokeWidth={0} />
+          <div className="flex gap-4.5 mt-2">
+            <a 
+              href="https://facebook.com/ahoroonbd" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="w-12 h-12 rounded-full border border-slate-200 bg-slate-950 text-white flex items-center justify-center transition-all duration-300 hover:scale-110 hover:border-[#1877F2] hover:shadow-[0_0_15px_rgba(24,119,242,0.4)] hover:text-[#1877F2] active:scale-95 cursor-pointer shadow-xs shrink-0"
+              title="Facebook"
+            >
+              <Facebook size={20} strokeWidth={1.8} />
             </a>
-            <a href="#" className="p-3 bg-gradient-to-tr from-[#fce043] via-[#e6683c] to-[#bc1888] rounded-xl text-white transition-all transform hover:-translate-y-1 hover:brightness-110 shadow-[0_4px_0_0_#9b1471,0_10px_10px_-5px_rgba(0,0,0,0.3)] active:translate-y-1 active:shadow-[0_0px_0_0_#9b1471,0_0px_0px_-5px_rgba(0,0,0,0.3)] flex items-center justify-center">
-              <Instagram size={22} strokeWidth={2.5} />
+            <a 
+              href="#" 
+              className="w-12 h-12 rounded-full border border-slate-200 bg-slate-950 text-white flex items-center justify-center transition-all duration-300 hover:scale-110 hover:border-[#E1306C] hover:shadow-[0_0_15px_rgba(225,48,108,0.4)] hover:text-[#E1306C] active:scale-95 cursor-pointer shadow-xs shrink-0"
+              title="Instagram"
+            >
+              <Instagram size={20} strokeWidth={1.8} />
             </a>
-            <a href="#" className="p-3 bg-black rounded-xl text-white transition-all transform hover:-translate-y-1 hover:brightness-110 shadow-[0_4px_0_0_#333,0_10px_10px_-5px_rgba(0,0,0,0.3)] active:translate-y-1 active:shadow-[0_0px_0_0_#333,0_0px_0px_-5px_rgba(0,0,0,0.3)] flex items-center justify-center">
-              <Twitter size={22} fill="currentColor" strokeWidth={0} />
+            <a 
+              href="#" 
+              className="w-12 h-12 rounded-full border border-slate-200 bg-slate-950 text-white flex items-center justify-center transition-all duration-300 hover:scale-110 hover:border-[#00f2fe] hover:shadow-[0_0_15px_rgba(0,242,254,0.3)] hover:text-[#00f2fe] active:scale-95 cursor-pointer shadow-xs shrink-0"
+              title="TikTok"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.62 2.89 2.89 0 0 1 2.31-4.51c.36 0 .71.06 1.05.18V9.43a6.33 6.33 0 0 0-1.05-.09 6.34 6.34 0 0 0-6.14 6.34A6.34 6.34 0 0 0 10 22a6.34 6.34 0 0 0 6.33-6.24V8a8.31 8.31 0 0 0 3.26 1.25V6.69z" />
+              </svg>
+            </a>
+            <a 
+              href="#" 
+              className="w-12 h-12 rounded-full border border-slate-200 bg-slate-950 text-white flex items-center justify-center transition-all duration-300 hover:scale-110 hover:border-[#FF0000] hover:shadow-[0_0_15px_rgba(255,0,0,0.4)] hover:text-[#FF0000] active:scale-95 cursor-pointer shadow-xs shrink-0"
+              title="YouTube"
+            >
+              <Youtube size={20} strokeWidth={1.8} />
             </a>
           </div>
         </div>

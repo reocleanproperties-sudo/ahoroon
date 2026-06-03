@@ -51,10 +51,11 @@ import AdminSettings from '../components/AdminSettings';
 type Tab = 'dashboard' | 'sliders' | 'products' | 'orders' | 'categories' | 'users' | 'invoices' | 'producers' | 'press' | 'settings';
 
 export default function Admin() {
-  const [user, setUser] = useState(auth.currentUser);
+  const [user, setUser] = useState<any>(auth.currentUser);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -82,10 +83,43 @@ export default function Admin() {
     message?: string;
   } | null>(null);
 
+  // States for Username / Password login
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      if (user) {
+    // Check if custom user is cached
+    const customUserStr = localStorage.getItem('customAdminUser');
+    if (customUserStr) {
+      try {
+        const customUser = JSON.parse(customUserStr);
+        setUser(customUser);
+        setIsAdmin(true);
+        loadData();
+        setLoading(false);
+        
+        adminService.getSettings().then(settings => {
+          if (settings && settings.logoUrl) setSiteLogo(settings.logoUrl);
+        });
+
+        const handleLogoUpdate = () => {
+          const newLogo = localStorage.getItem('siteLogo');
+          if (newLogo) setSiteLogo(newLogo);
+        };
+        window.addEventListener('siteLogoUpdated', handleLogoUpdate);
+        return () => {
+          window.removeEventListener('siteLogoUpdated', handleLogoUpdate);
+        };
+      } catch (e) {
+        localStorage.removeItem('customAdminUser');
+      }
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, async (u) => {
+      if (u) {
+        setUser(u);
         const adminStatus = await adminService.isAdmin();
         setIsAdmin(adminStatus);
         if (adminStatus) {
@@ -93,6 +127,12 @@ export default function Admin() {
            adminService.getSettings().then(settings => {
              if (settings && settings.logoUrl) setSiteLogo(settings.logoUrl);
            });
+        }
+      } else {
+        const stillCustom = localStorage.getItem('customAdminUser');
+        if (!stillCustom) {
+          setUser(null);
+          setIsAdmin(false);
         }
       }
       setLoading(false);
@@ -168,8 +208,46 @@ export default function Admin() {
   };
 
   const handleLogout = async () => {
+    localStorage.removeItem('customAdminUser');
     await signOut(auth);
     setIsAdmin(false);
+    setUser(null);
+  };
+
+  const handleCustomLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setIsLoggingIn(true);
+    try {
+      const allUsers = await adminService.getUsers();
+      const matched = allUsers?.find(
+        (u: any) => 
+          u.name?.trim().toLowerCase() === loginUsername.trim().toLowerCase() && 
+          u.password?.toString().trim() === loginPassword.trim()
+      );
+
+      if (matched) {
+        const mockUser = {
+          uid: matched.id,
+          displayName: matched.name,
+          email: matched.email || (matched.name?.toLowerCase() + '@ahoroon.com'),
+          role: matched.role || 'viewer',
+          permissions: matched.permissions || [],
+          isCustom: true
+        };
+        setUser(mockUser);
+        setIsAdmin(true);
+        localStorage.setItem('customAdminUser', JSON.stringify(mockUser));
+        loadData();
+      } else {
+        setLoginError('ইউজারনেম অথবা পাসওয়ার্ড ভুল হয়েছে।');
+      }
+    } catch (err) {
+      console.error(err);
+      setLoginError('লগইন করার সময় একটি সমস্যা হয়েছে।');
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
   if (loading) {
@@ -189,16 +267,70 @@ export default function Admin() {
           </div>
           <div className="space-y-2">
             <h1 className="text-3xl font-display font-black text-accent-deep">Admin Panel</h1>
-            <p className="text-gray-500 text-sm">Please log in with an admin account to continue.</p>
+            <p className="text-gray-500 text-sm">প্যানেলে প্রবেশ করতে অনুগ্রহ করে লগইন করুন।</p>
           </div>
+
+          <form onSubmit={handleCustomLogin} className="space-y-4 text-left">
+            {loginError && (
+              <div className="p-3 bg-red-50 text-red-500 rounded-xl text-xs font-bold flex items-center gap-2">
+                <AlertCircle size={16} />
+                <span>{loginError}</span>
+              </div>
+            )}
+            
+            <div className="space-y-1.55">
+              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">ইউজারনেম / নাম</label>
+              <input 
+                required
+                type="text"
+                placeholder="ইউজারনেম লিখুন"
+                className="w-full bg-surface p-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium text-sm"
+                value={loginUsername}
+                onChange={e => setLoginUsername(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1.55">
+              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">পাসওয়ার্ড</label>
+              <input 
+                required
+                type="password"
+                placeholder="পাসওয়ার্ড লিখুন"
+                className="w-full bg-surface p-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium text-sm"
+                value={loginPassword}
+                onChange={e => setLoginPassword(e.target.value)}
+              />
+            </div>
+
+            <button 
+              type="submit"
+              disabled={isLoggingIn}
+              className="w-full bg-accent-deep text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-primary transition-all shadow-lg"
+            >
+              {isLoggingIn ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                'লগইন করুন'
+              )}
+            </button>
+          </form>
+
+          <div className="relative py-2 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-100"></div>
+            </div>
+            <span className="relative px-3 bg-white text-xs text-gray-400 font-bold">অথবা</span>
+          </div>
+
           <button 
+            type="button"
             onClick={handleLogin}
-            className="w-full bg-primary text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-accent-deep transition-all shadow-lg shadow-primary/20"
+            className="w-full bg-primary/10 text-primary py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-primary/25 transition-all"
           >
             Google দিয়ে লগইন করুন
           </button>
           {!isAdmin && user && (
-            <p className="text-red-500 text-xs font-bold">You do not have admin permissions.</p>
+            <p className="text-red-500 text-xs font-bold mt-2">আপনার এডমিন প্যানেলে অ্যাক্সেস করার অনুমতি নেই।</p>
           )}
         </div>
       </div>
@@ -206,22 +338,178 @@ export default function Admin() {
   }
 
   return (
-    <div className="flex h-screen bg-surface overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-20 lg:w-64 bg-white border-r border-gray-100 flex flex-col">
-        <div className="p-4 lg:p-6 flex justify-center lg:justify-start">
-          <img 
-            src={siteLogo} 
-            alt="আহরোণ" 
-            className="h-10 w-auto object-contain hidden lg:block animate-fade-in"
-            referrerPolicy="no-referrer"
-          />
-          <img 
-            src={siteLogo} 
-            alt="আ" 
-            className="h-8 w-auto object-contain lg:hidden animate-fade-in"
-            referrerPolicy="no-referrer"
-          />
+    <div className="flex flex-col lg:flex-row h-screen bg-surface overflow-hidden">
+      {/* Mobile Top Header (Slick & modern navigation for mobile screen sizes) */}
+      <header className="lg:hidden bg-white border-b border-gray-100 flex items-center justify-between px-5 py-4 shrink-0 shadow-xs z-30">
+        <button 
+          onClick={() => setIsMobileSidebarOpen(true)}
+          className="p-2.5 -ml-2.5 rounded-2xl text-slate-600 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+        >
+          <svg className="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        
+        <div className="flex items-center gap-2">
+          {siteLogo ? (
+            <img src={siteLogo} alt="আহরোণ" className="h-9 w-auto object-contain" referrerPolicy="no-referrer" />
+          ) : (
+            <span className="font-logo text-xl text-[#005900] logo-text">আহরোণ</span>
+          )}
+          <span className="text-[9px] bg-emerald-50 text-emerald-700 font-extrabold border border-emerald-100/50 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Admin</span>
+        </div>
+
+        <div className="w-9 h-9 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-xs overflow-hidden shrink-0">
+          {user?.photoURL ? (
+            <img src={user.photoURL} alt={user?.displayName || 'Admin'} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          ) : (
+            <User size={16} />
+          )}
+        </div>
+      </header>
+
+      {/* Dynamic Slide-out Drawer Panel Sidebar for touch screens */}
+      <AnimatePresence>
+        {isMobileSidebarOpen && (
+          <>
+            {/* Drawer Backdrop Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileSidebarOpen(false)}
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 lg:hidden"
+            />
+
+            {/* Slide-out Drawer Panel Container */}
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="fixed top-0 bottom-0 left-0 w-72 max-w-[85vw] bg-white shadow-2xl border-r border-slate-100 z-50 flex flex-col lg:hidden"
+            >
+              {/* Drawer Header Brand Profile */}
+              <div className="p-5 border-b border-slate-50 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  {siteLogo ? (
+                    <img src={siteLogo} alt="আহরোণ" className="h-9 w-auto object-contain" referrerPolicy="no-referrer" />
+                  ) : (
+                    <span className="font-logo text-2xl text-[#005900] logo-text">আহরোণ</span>
+                  )}
+                  <span className="text-[9px] bg-emerald-50 text-emerald-700 font-extrabold border border-emerald-100/50 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Admin</span>
+                </div>
+                
+                <button 
+                  onClick={() => setIsMobileSidebarOpen(false)}
+                  className="p-2 -mr-2 text-slate-400 hover:text-slate-650 hover:bg-slate-50 rounded-xl transition-all cursor-pointer"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Drawer Navigation Links */}
+              <nav className="flex-1 px-4 py-5 space-y-1.5 overflow-y-auto min-h-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <SidebarItem 
+                  icon={LayoutDashboard} 
+                  label="Dashboard" 
+                  active={activeTab === 'dashboard'} 
+                  onClick={() => { setActiveTab('dashboard'); setIsMobileSidebarOpen(false); }} 
+                  showLabel
+                />
+                <SidebarItem 
+                  icon={ImageIcon} 
+                  label="Hero Sliders" 
+                  active={activeTab === 'sliders'} 
+                  onClick={() => { setActiveTab('sliders'); setIsMobileSidebarOpen(false); }} 
+                  showLabel
+                />
+                <SidebarItem 
+                  icon={Package} 
+                  label="Products" 
+                  active={activeTab === 'products'} 
+                  onClick={() => { setActiveTab('products'); setIsMobileSidebarOpen(false); }} 
+                  showLabel
+                />
+                <SidebarItem 
+                  icon={ShoppingCart} 
+                  label="Orders" 
+                  active={activeTab === 'orders'} 
+                  onClick={() => { setActiveTab('orders'); setIsMobileSidebarOpen(false); }} 
+                  showLabel
+                />
+                <SidebarItem 
+                  icon={Tag} 
+                  label="Categories" 
+                  active={activeTab === 'categories'} 
+                  onClick={() => { setActiveTab('categories'); setIsMobileSidebarOpen(false); }} 
+                  showLabel
+                />
+                <SidebarItem 
+                  icon={Users} 
+                  label="Users" 
+                  active={activeTab === 'users'} 
+                  onClick={() => { setActiveTab('users'); setIsMobileSidebarOpen(false); }} 
+                  showLabel
+                />
+                <SidebarItem 
+                  icon={ReceiptText} 
+                  label="Manual Invoices" 
+                  active={activeTab === 'invoices'} 
+                  onClick={() => { setActiveTab('invoices'); setIsMobileSidebarOpen(false); }} 
+                  showLabel
+                />
+                <SidebarItem 
+                  icon={Sparkles} 
+                  label="Producers" 
+                  active={activeTab === 'producers'} 
+                  onClick={() => { setActiveTab('producers'); setIsMobileSidebarOpen(false); }} 
+                  showLabel
+                />
+                <SidebarItem 
+                  icon={Newspaper} 
+                  label="Newspaper (Press)" 
+                  active={activeTab === 'press'} 
+                  onClick={() => { setActiveTab('press'); setIsMobileSidebarOpen(false); }} 
+                  showLabel
+                />
+                <SidebarItem 
+                  icon={SettingsIcon} 
+                  label="Site Settings (Logo)" 
+                  active={activeTab === 'settings'} 
+                  onClick={() => { setActiveTab('settings'); setIsMobileSidebarOpen(false); }} 
+                  showLabel
+                />
+              </nav>
+
+              {/* Drawer Footer Logout */}
+              <div className="p-4 border-t border-slate-50 bg-slate-50/50">
+                <button 
+                  onClick={() => { handleLogout(); setIsMobileSidebarOpen(false); }}
+                  className="w-full flex items-center gap-3 p-3.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all font-bold text-sm cursor-pointer"
+                >
+                  <LogOut size={18} />
+                  <span>Log out</span>
+                </button>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Persistent Desktop Sidebar */}
+      <aside className="hidden lg:flex w-64 bg-white border-r border-gray-100 flex-col shrink-0">
+        <div className="p-6 flex justify-start">
+          {siteLogo ? (
+            <img 
+              src={siteLogo} 
+              alt="আহরোণ" 
+              className="h-10 w-auto object-contain animate-fade-in"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <span className="font-logo text-2xl text-[#005900] logo-text">আহরোণ</span>
+          )}
         </div>
 
         <nav className="flex-1 px-4 space-y-2 pt-4 overflow-y-auto pb-6">
@@ -230,76 +518,86 @@ export default function Admin() {
             label="Dashboard" 
             active={activeTab === 'dashboard'} 
             onClick={() => setActiveTab('dashboard')} 
+            showLabel
           />
           <SidebarItem 
             icon={ImageIcon} 
             label="Hero Sliders" 
             active={activeTab === 'sliders'} 
             onClick={() => setActiveTab('sliders')} 
+            showLabel
           />
           <SidebarItem 
             icon={Package} 
             label="Products" 
             active={activeTab === 'products'} 
             onClick={() => setActiveTab('products')} 
+            showLabel
           />
           <SidebarItem 
             icon={ShoppingCart} 
             label="Orders" 
             active={activeTab === 'orders'} 
             onClick={() => setActiveTab('orders')} 
+            showLabel
           />
           <SidebarItem 
             icon={Tag} 
             label="Categories" 
             active={activeTab === 'categories'} 
             onClick={() => setActiveTab('categories')} 
+            showLabel
           />
           <SidebarItem 
             icon={Users} 
             label="Users" 
             active={activeTab === 'users'} 
             onClick={() => setActiveTab('users')} 
+            showLabel
           />
           <SidebarItem 
             icon={ReceiptText} 
             label="Manual Invoices" 
             active={activeTab === 'invoices'} 
             onClick={() => setActiveTab('invoices')} 
+            showLabel
           />
           <SidebarItem 
             icon={Sparkles} 
             label="Producers" 
             active={activeTab === 'producers'} 
             onClick={() => setActiveTab('producers')} 
+            showLabel
           />
           <SidebarItem 
             icon={Newspaper} 
             label="Newspaper (Press)" 
             active={activeTab === 'press'} 
             onClick={() => setActiveTab('press')} 
+            showLabel
           />
           <SidebarItem 
             icon={SettingsIcon} 
             label="Site Settings (Logo)" 
             active={activeTab === 'settings'} 
             onClick={() => setActiveTab('settings')} 
+            showLabel
           />
         </nav>
 
         <div className="p-4 border-t border-gray-50">
           <button 
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 p-3 text-gray-400 hover:text-red-500 transition-colors rounded-xl font-bold text-sm"
+            className="w-full flex items-center gap-3 p-3.5 text-gray-400 hover:text-red-500 transition-colors rounded-xl font-bold text-sm cursor-pointer"
           >
             <LogOut size={20} />
-            <span className="hidden lg:block">Logout</span>
+            <span>Logout</span>
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-10">
+      {/* Main Content Pane */}
+      <main className="flex-1 overflow-y-auto p-4 md:p-10 min-w-0">
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
           <div>
             <h1 className="text-3xl font-display font-black text-accent-deep capitalize">{activeTab}</h1>
@@ -616,7 +914,7 @@ export default function Admin() {
   );
 }
 
-function SidebarItem({ icon: Icon, label, active, onClick }: { icon: any, label: string, active: boolean, onClick: () => void }) {
+function SidebarItem({ icon: Icon, label, active, onClick, showLabel }: { icon: any, label: string, active: boolean, onClick: () => void, showLabel?: boolean }) {
   return (
     <button 
       onClick={onClick}
@@ -626,7 +924,7 @@ function SidebarItem({ icon: Icon, label, active, onClick }: { icon: any, label:
       )}
     >
       <Icon size={20} className={cn(active ? "text-white" : "group-hover:text-primary flex-shrink-0")} />
-      <span className="hidden lg:block truncate">{label}</span>
+      <span className={cn(showLabel ? "block" : "hidden lg:block", "truncate")}>{label}</span>
     </button>
   );
 }
@@ -1723,7 +2021,14 @@ function UsersTable({ users, onEdit, onDelete }: any) {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-accent-deep">{u.name || 'No Name'}</p>
-                    <p className="text-[10px] text-gray-400">{u.email}</p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="text-[10px] text-gray-400">{u.email}</p>
+                      {u.password && (
+                        <span className="px-1.5 py-0.5 bg-yellow-50 text-yellow-600 rounded font-mono font-bold text-[9px]">
+                          Pass: {u.password}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </td>
@@ -1802,7 +2107,7 @@ function InvoicesTable({ invoices, onView, onDelete }: any) {
 function UserModal({ user, onClose, onSave }: any) {
   const [formData, setFormData] = useState({
     name: user?.name || '',
-    email: user?.email || '',
+    password: user?.password || '',
     role: user?.role || 'viewer',
     permissions: user?.permissions || []
   });
@@ -1824,10 +2129,17 @@ function UserModal({ user, onClose, onSave }: any) {
     e.preventDefault();
     setLoading(true);
     try {
+      const payload = {
+        name: formData.name.trim(),
+        password: formData.password.trim(),
+        role: formData.role,
+        permissions: formData.permissions,
+        email: user?.email || (formData.name.trim().toLowerCase().replace(/\s+/g, '') + "@ahoroon.com")
+      };
       if (user?.id) {
-        await adminService.updateUser(user.id, formData);
+        await adminService.updateUser(user.id, payload);
       } else {
-        await adminService.addUser(formData as any);
+        await adminService.addUser(payload as any);
       }
       onSave();
       onClose();
@@ -1860,9 +2172,10 @@ function UserModal({ user, onClose, onSave }: any) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Name</label>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">User Name</label>
             <input 
               required
+              placeholder="e.g. adon, admin, emran"
               className="w-full bg-surface p-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
               value={formData.name}
               onChange={e => setFormData({...formData, name: e.target.value})}
@@ -1870,13 +2183,14 @@ function UserModal({ user, onClose, onSave }: any) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Email</label>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Password</label>
             <input 
               required
-              type="email" 
+              type="text" 
+              placeholder="e.g. 123456"
               className="w-full bg-surface p-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
-              value={formData.email}
-              onChange={e => setFormData({...formData, email: e.target.value})}
+              value={formData.password}
+              onChange={e => setFormData({...formData, password: e.target.value})}
             />
           </div>
 
@@ -1940,7 +2254,7 @@ function ManualInvoiceModal({ invoice, onClose, onSave }: any) {
     items: invoice?.items || [{ name: '', price: 0, quantity: 1, unit: 'pcs' }],
     total: invoice?.total || 0,
     paymentMethod: invoice?.paymentMethod || 'Cash',
-    status: invoice?.status || 'Paid'
+    status: invoice?.status || 'New Invoice'
   });
   const [loading, setLoading] = useState(false);
 
@@ -2115,11 +2429,16 @@ function ManualInvoiceModal({ invoice, onClose, onSave }: any) {
             <div className="space-y-4 w-full md:w-auto">
               <div>
                 <label className="text-[10px] font-bold text-white/50 uppercase tracking-widest block mb-1">Payment Method</label>
-                <input 
-                  className="bg-white/10 border border-white/20 rounded-xl p-3 text-sm focus:bg-white/20 outline-none w-full"
+                <select 
+                  className="bg-white/10 border border-white/20 rounded-xl p-3 text-sm focus:bg-white/20 outline-none w-full text-white cursor-pointer [&>option]:text-gray-900"
                   value={formData.paymentMethod}
                   onChange={e => setFormData({...formData, paymentMethod: e.target.value})}
-                />
+                >
+                  <option value="Cash">Cash</option>
+                  <option value="COD - Cash on delivery">COD - Cash on delivery</option>
+                  <option value="Paid">Paid</option>
+                  <option value="Due">Due</option>
+                </select>
               </div>
             </div>
             <div className="text-right w-full md:w-auto">

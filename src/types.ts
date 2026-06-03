@@ -53,6 +53,7 @@ export interface AppUser {
   id: string;
   name?: string;
   email: string;
+  password?: string;
   role: 'admin' | 'editor' | 'viewer';
   permissions: string[];
   createdAt: any;
