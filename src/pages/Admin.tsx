@@ -1492,6 +1492,19 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
   function InvoiceModal({ order, onClose }: any) {
     const contentRef = useRef<HTMLDivElement>(null);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [logo, setLogo] = useState<string>(
+      localStorage.getItem('siteLogo') || localStorage.getItem('siteFooterLogo') || ""
+    );
+
+    useEffect(() => {
+      adminService.getSettings()
+        .then(settings => {
+          if (settings && settings.logoUrl) {
+            setLogo(settings.logoUrl);
+          }
+        })
+        .catch(err => console.error("Error loading settings in InvoiceModal:", err));
+    }, []);
     
     const handlePrint = () => {
       // Native browser print is the most robust solution for A4/PDF
@@ -1650,7 +1663,7 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] flex items-start sm:items-center justify-center p-0 sm:p-4 bg-black/90 backdrop-blur-md overflow-y-auto"
+      className="fixed inset-0 z-[60] flex flex-col items-center justify-start bg-black/95 backdrop-blur-md overflow-y-auto py-24 px-2 sm:px-4"
     >
       {/* Controls - Sticky on Mobile */}
       <div className="fixed top-0 left-0 right-0 p-4 flex flex-wrap justify-center sm:justify-end gap-2 bg-black/50 backdrop-blur-md sm:bg-transparent sm:backdrop-blur-none sm:absolute sm:top-8 sm:right-8 z-[100] print:hidden">
@@ -1680,143 +1693,165 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
         </button>
       </div>
 
-      <div ref={contentRef} className="bg-white w-full max-w-4xl min-h-screen sm:min-h-0 mt-20 sm:my-12 p-6 sm:p-12 shadow-2xl relative print:shadow-none print:w-full print:max-w-none print:p-0 print:my-0 print:mt-0" id="invoice-content">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start gap-6 sm:gap-8 mb-8 sm:mb-12 border-b border-gray-200 pb-8">
-          <div className="space-y-3 w-full md:w-auto">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-xl flex items-center justify-center text-white rotate-3 shadow-lg shadow-primary/20 shrink-0">
-                <span className="text-xl sm:text-2xl font-black italic uppercase">আ</span>
+      <div className="w-full max-w-full overflow-x-auto flex justify-start md:justify-center py-6 print:py-0 print:overflow-visible">
+        <div 
+          ref={contentRef} 
+          className="bg-white w-[210mm] h-[297mm] min-h-[297mm] max-h-[297mm] p-10 shadow-2xl relative print:shadow-none flex flex-col justify-between box-border overflow-hidden select-none shrink-0" 
+          id="invoice-content"
+          style={{ width: '210mm', height: '297mm', minHeight: '297mm', maxHeight: '297mm', boxSizing: 'border-box' }}
+        >
+          <div>
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6 border-b border-gray-200 pb-6">
+              <div className="space-y-3 w-full md:w-auto">
+                <div className="flex items-center gap-3">
+                  {logo ? (
+                    <img 
+                      src={logo} 
+                      alt="আহরোণ" 
+                      className="h-12 w-auto object-contain print:max-h-12 pb-1" 
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-xl flex items-center justify-center text-white rotate-3 shadow-lg shadow-primary/20 shrink-0">
+                        <span className="text-xl sm:text-2xl font-black italic uppercase">আ</span>
+                      </div>
+                      <h1 className="text-2xl sm:text-4xl font-display font-black text-primary italic tracking-tight uppercase leading-tight font-sans">
+                        আহরোণ <span className="text-accent-deep not-italic text-lg sm:text-2xl block xs:inline">(Aharon)</span>
+                      </h1>
+                    </div>
+                  )}
+                </div>
+                <div className="text-xs text-gray-500 space-y-1">
+                  <p className="font-extrabold uppercase text-[10px] text-gray-400 tracking-wider">Quality food products from bengal</p>
+                  <p>Mohammadpur, Bosila, Dhaka, Bangladesh 1207</p>
+                  <p>TIN: 123456789101 | BIN: 001234567-0101</p>
+                  <p>Support: +8801796361024 | info@ahoron.com</p>
+                </div>
               </div>
-              <h1 className="text-2xl sm:text-4xl font-display font-black text-primary italic tracking-tight uppercase leading-tight">
-                আহরোণ <span className="text-accent-deep not-italic font-sans text-lg sm:text-2xl block xs:inline">(Aharon)</span>
-              </h1>
-            </div>
-            <div className="text-xs text-gray-500 space-y-1">
-              <p className="font-extrabold uppercase text-[10px] text-gray-400 tracking-wider">Specialized in Quality Products</p>
-              <p>Mirpur-10, Dhaka-1216, Bangladesh</p>
-              <p>TIN: 123456789101 | BIN: 001234567-0101</p>
-              <p>Support: +880 1700-000000 | reocleanproperties@gmail.com</p>
-            </div>
-          </div>
-          <div className="w-full md:w-auto text-left md:text-right space-y-2 pt-4 md:pt-0 border-t border-gray-100 md:border-0">
-            <h2 className="text-3xl font-display font-black text-primary tracking-widest uppercase">INVOICE</h2>
-            <div className="space-y-1 text-sm font-bold text-gray-600">
-              <div className="flex justify-start md:justify-end gap-2">
-                <span className="text-gray-400 uppercase tracking-wider text-xs">Invoice No:</span>
-                <span className="text-accent-deep">#{ (order.invoiceNo || order.id).slice(-8).toUpperCase() }</span>
-              </div>
-              <div className="flex justify-start md:justify-end gap-2">
-                <span className="text-gray-400 uppercase tracking-wider text-xs">Date:</span>
-                <span className="text-accent-deep">{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+              <div className="w-full md:w-auto text-left md:text-right space-y-2 pt-4 md:pt-0 border-t border-gray-100 md:border-0">
+                <h2 className="text-3xl font-display font-black text-primary tracking-widest uppercase">INVOICE</h2>
+                <div className="space-y-1 text-sm font-bold text-gray-600">
+                  <div className="flex justify-start md:justify-end gap-2">
+                    <span className="text-gray-400 uppercase tracking-wider text-xs">Invoice No:</span>
+                    <span className="text-accent-deep">#{ (order.invoiceNo || order.id).slice(-8).toUpperCase() }</span>
+                  </div>
+                  <div className="flex justify-start md:justify-end gap-2">
+                    <span className="text-gray-400 uppercase tracking-wider text-xs">Date:</span>
+                    <span className="text-accent-deep">{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Info Section - Simple Text Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 sm:mb-12 border-b border-gray-200 pb-8">
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Billing To (বিলিং তথ্য)</h3>
-            <div className="space-y-1">
-              <p className="text-lg font-black text-accent-deep">{order.customerName || order.customer?.name}</p>
-              <p className="text-sm text-gray-600 font-bold">Phone: {order.phoneNumber || order.customer?.phone}</p>
-              <p className="text-sm text-gray-500">Address: {order.address || order.customer?.address}</p>
-            </div>
-          </div>
-          
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Payment Details (পেমেন্ট তথ্য)</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500 font-bold">Payment Method:</span>
-                <span className="font-extrabold text-accent-deep">{order.paymentMethod || 'Cash on Delivery'}</span>
+            {/* Info Section - Simple Text Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6 border-b border-gray-200 pb-6">
+              <div className="space-y-3">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Billing To (বিলিং তথ্য)</h3>
+                <div className="space-y-1 block whitespace-normal">
+                  <p className="text-lg font-black text-accent-deep">{order.customerName || order.customer?.name}</p>
+                  <p className="text-sm text-gray-600 font-bold">Phone: {order.phoneNumber || order.customer?.phone}</p>
+                  <p className="text-sm text-gray-500 leading-relaxed max-w-sm">{order.address || order.customer?.address}</p>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500 font-bold">Total Items:</span>
-                <span className="font-extrabold text-accent-deep">{order.items?.reduce((acc: number, item: any) => acc + (item.cartQuantity || item.quantity || 1), 0) || 0} Units</span>
+              
+              <div className="space-y-3">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Payment Details (পেমেন্ট তথ্য)</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 font-bold">Payment Method:</span>
+                    <span className="font-extrabold text-accent-deep">{order.paymentMethod || 'Cash on Delivery'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 font-bold">Total Items:</span>
+                    <span className="font-extrabold text-accent-deep">{order.items?.reduce((acc: number, item: any) => acc + (item.cartQuantity || item.quantity || 1), 0) || 0} Units</span>
+                  </div>
+                  <div className="flex justify-between border-t border-gray-100 pt-2">
+                    <span className="text-gray-500 font-bold">Payment Status:</span>
+                    <span className="font-extrabold text-green-600">{order.status?.toUpperCase() || 'PAID'}</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between border-t border-gray-100 pt-2">
-                <span className="text-gray-500 font-bold">Payment Status:</span>
-                <span className="font-extrabold text-green-600">{order.status?.toUpperCase() || 'PAID'}</span>
+            </div>
+
+            {/* Table - Simple Minimalist */}
+            <div className="mb-6 overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-300 text-xs text-gray-500 uppercase tracking-wider font-bold">
+                    <th className="py-2.5 text-left w-12 font-extrabold">No</th>
+                    <th className="py-2.5 text-left font-extrabold">Item Description</th>
+                    <th className="py-2.5 text-center w-20 font-extrabold">Qty</th>
+                    <th className="py-2.5 text-right w-28 font-extrabold">Unit Price</th>
+                    <th className="py-2.5 text-right w-28 font-extrabold">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-150 text-sm">
+                  {order.items?.map((item: any, i: number) => (
+                    <tr key={`inv-item-${item.id || 'inv'}-${i}`} className="hover:bg-gray-50/50">
+                      <td className="py-3 text-gray-400 font-bold">{(i + 1).toString().padStart(2, '0')}</td>
+                      <td className="py-3">
+                        <p className="font-extrabold text-accent-deep text-xs sm:text-sm">{item.name}</p>
+                        <p className="text-[10px] text-gray-500 uppercase tracking-wide">Unit: {item.unit || 'pcs'}</p>
+                      </td>
+                      <td className="py-3 text-center font-extrabold text-gray-700">
+                        {item.cartQuantity || item.quantity || 1}
+                      </td>
+                      <td className="py-3 text-right font-medium text-gray-600">৳{item.price}</td>
+                      <td className="py-3 text-right font-extrabold text-accent-deep">৳{item.price * (item.cartQuantity || item.quantity || 1)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            {/* Summary Footer */}
+            <div className="flex flex-col md:flex-row justify-between items-start gap-8 border-t border-gray-200 pt-6">
+              <div className="flex-1 space-y-6 w-full">
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Terms & Conditions</h4>
+                  <ul className="text-xs text-gray-500 space-y-1 pl-4 list-disc leading-relaxed">
+                    <li>Goods once sold are not returnable without valid reason.</li>
+                    <li>Please keep this invoice for any warranty claims.</li>
+                    <li>This is a computer-generated invoice, no signature is required.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="w-full md:w-85 space-y-2">
+                <div className="flex justify-between items-center text-sm text-gray-600 font-medium">
+                  <span>Basic Amount:</span>
+                  <span className="font-extrabold text-accent-deep">৳{order.total}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm text-gray-600 font-medium">
+                  <span>Delivery Charge:</span>
+                  <span className="text-green-600 font-extrabold">FREE</span>
+                </div>
+                <div className="flex justify-between items-center text-sm text-gray-600 font-medium border-b border-gray-200 pb-2">
+                  <span>Discount:</span>
+                  <span className="text-rose-600 font-extrabold">৳0</span>
+                </div>
+                <div className="flex justify-between items-center pt-2">
+                  <span className="text-base font-bold text-accent-deep uppercase tracking-wider">NET TOTAL</span>
+                  <span className="text-3xl font-display font-black text-primary">৳{order.total}</span>
+                </div>
+                
+                <div className="pt-8 text-center font-bold">
+                  <div className="w-32 h-px bg-gray-300 mx-auto mb-1" />
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wider">Authorized Signature</p>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Table - Simple Minimalist */}
-        <div className="mb-8 sm:mb-12 overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-300 text-xs text-gray-500 uppercase tracking-wider font-bold">
-                <th className="py-3 text-left w-12 font-extrabold">No</th>
-                <th className="py-3 text-left font-extrabold">Item Description</th>
-                <th className="py-3 text-center w-20 font-extrabold">Qty</th>
-                <th className="py-3 text-right w-28 font-extrabold">Unit Price</th>
-                <th className="py-3 text-right w-28 font-extrabold">Total</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-150 text-sm">
-              {order.items?.map((item: any, i: number) => (
-                <tr key={`inv-item-${item.id || 'inv'}-${i}`} className="hover:bg-gray-50/50">
-                  <td className="py-4 text-gray-400 font-bold">{(i + 1).toString().padStart(2, '0')}</td>
-                  <td className="py-4">
-                    <p className="font-extrabold text-accent-deep">{item.name}</p>
-                    <p className="text-[10px] text-gray-500 uppercase tracking-wide">Unit: {item.unit || 'pcs'}</p>
-                  </td>
-                  <td className="py-4 text-center font-extrabold text-gray-700">
-                    {item.cartQuantity || item.quantity || 1}
-                  </td>
-                  <td className="py-4 text-right font-medium text-gray-600">৳{item.price}</td>
-                  <td className="py-4 text-right font-extrabold text-accent-deep">৳{item.price * (item.cartQuantity || item.quantity || 1)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Summary Footer */}
-        <div className="flex flex-col md:flex-row justify-between items-start gap-8 sm:gap-12 border-t border-gray-200 pt-8">
-          <div className="flex-1 space-y-6 w-full">
-            <div className="space-y-2">
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Terms & Conditions</h4>
-              <ul className="text-xs text-gray-500 space-y-1 pl-4 list-disc leading-relaxed">
-                <li>Goods once sold are not returnable without valid reason.</li>
-                <li>Please keep this invoice for any warranty claims.</li>
-                <li>This is a computer-generated invoice, no signature is required.</li>
-              </ul>
+            {/* Bottom Bar */}
+            <div className="mt-8 py-3 border-t border-gray-50 text-center flex flex-col sm:flex-row justify-center items-center gap-4">
+              <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Official Invoice &copy; {new Date().getFullYear()} Aharon Shopping | MOHAMMADPUR DHAKA</p>
+              <p className="text-[9px] font-black text-primary uppercase tracking-widest italic font-sans leading-none">A product of info@ahoron.com</p>
             </div>
           </div>
-
-          <div className="w-full md:w-85 space-y-2">
-            <div className="flex justify-between items-center text-sm text-gray-600 font-medium">
-              <span>Basic Amount:</span>
-              <span className="font-extrabold text-accent-deep">৳{order.total}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm text-gray-600 font-medium">
-              <span>Delivery Charge:</span>
-              <span className="text-green-600 font-extrabold">FREE</span>
-            </div>
-            <div className="flex justify-between items-center text-sm text-gray-600 font-medium border-b border-gray-200 pb-2">
-              <span>Discount:</span>
-              <span className="text-rose-600 font-extrabold">৳0</span>
-            </div>
-            <div className="flex justify-between items-center pt-2">
-              <span className="text-base font-bold text-accent-deep uppercase tracking-wider">NET TOTAL</span>
-              <span className="text-3xl font-display font-black text-primary">৳{order.total}</span>
-            </div>
-            
-            <div className="pt-8 text-center font-bold">
-              <div className="w-32 h-px bg-gray-300 mx-auto mb-1" />
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider">Authorized Signature</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="mt-12 sm:mt-16 py-4 border-t border-gray-50 text-center flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8">
-          <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Official Invoice &copy; {new Date().getFullYear()} Aharon Shopping | MIRPUR DHAKA</p>
-          <p className="text-[9px] font-black text-primary uppercase tracking-widest italic font-sans leading-none">A product of reocleanproperties@gmail.com</p>
         </div>
       </div>
     </motion.div>
