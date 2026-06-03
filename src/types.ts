@@ -23,6 +23,7 @@ export interface Product {
   labTestUrl?: string;
   harvestDate?: string;
   isVerified?: boolean;
+  stock?: number;
 }
 
 export interface Category {

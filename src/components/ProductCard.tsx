@@ -43,18 +43,29 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               -{product.discount}%
             </div>
           )}
+          {product.stock !== undefined && product.stock <= 0 && (
+            <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full text-[10px] font-bold shadow-sm uppercase tracking-wider z-10">
+              স্টক আউট
+            </div>
+          )}
           <div className="absolute top-3 right-3">
              <WishlistButton product={product} />
           </div>
-          <button 
-            onClick={(e) => {
-              e.preventDefault();
-              addToCart(product, product.moq || 1);
-            }}
-            className="absolute bottom-3 right-3 bg-white w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg transform translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 active:scale-90"
-          >
-            <Plus size={20} className="text-primary" />
-          </button>
+          {(product.stock === undefined || product.stock > 0) ? (
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                addToCart(product, product.moq || 1);
+              }}
+              className="absolute bottom-3 right-3 bg-white w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg transform translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 active:scale-90"
+            >
+              <Plus size={20} className="text-primary" />
+            </button>
+          ) : (
+            <div className="absolute bottom-3 right-3 bg-red-100 px-2.5 py-1.5 rounded-xl text-[9px] font-bold text-red-600 transition-all shadow-md z-10">
+              স্টক শেষ
+            </div>
+          )}
         </div>
         
         <div className="space-y-1">

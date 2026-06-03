@@ -229,6 +229,32 @@ export const adminService = {
   },
 
   // Users Management
+  async createAdminSession(uid: string, username: string, passwordVal: string) {
+    const path = `admins/${uid}`;
+    try {
+      await setDoc(doc(db, 'admins', uid), {
+        username,
+        password: passwordVal,
+        createdAt: serverTimestamp()
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.CREATE, path);
+    }
+  },
+
+  async getUserProfile(usernameDocId: string) {
+    const path = `users/${usernameDocId}`;
+    try {
+      const uDoc = await getDoc(doc(db, 'users', usernameDocId));
+      if (uDoc.exists()) {
+        return { id: uDoc.id, ...uDoc.data() } as AppUser;
+      }
+      return null;
+    } catch (e) {
+      handleFirestoreError(e, OperationType.GET, path);
+    }
+  },
+
   async getUsers() {
     if (checkFirestoreDisabled()) {
         const cached = localStorage.getItem('users');
@@ -248,12 +274,13 @@ export const adminService = {
 
   async addUser(userData: Omit<AppUser, 'id'>) {
     const path = 'users';
+    const docId = userData.name ? userData.name.trim().toLowerCase().replace(/\s+/g, '') : Math.random().toString(36).substring(2);
     try {
-      const docRef = await addDoc(collection(db, path), {
+      await setDoc(doc(db, 'users', docId), {
         ...userData,
         createdAt: serverTimestamp(),
       });
-      return docRef.id;
+      return docId;
     } catch (e) {
       handleFirestoreError(e, OperationType.CREATE, path);
     }

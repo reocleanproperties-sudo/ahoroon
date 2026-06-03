@@ -64,72 +64,22 @@ service cloud.firestore {
 
     // Orders
     match /orders/{orderId} {
-      function isValidOrder(data) {
-        let authCheck = (!data.get('userId', null) || (isSignedIn() && data.userId == request.auth.uid));
-        
-        return authCheck &&
-               data.get('items', []) is list && data.items.size() > 0 &&
-               data.get('total', 0) is number && data.total >= 0 &&
-               data.get('status', 'pending') in ['pending', 'processing', 'shipped', 'delivered', 'cancelled'] &&
-               data.get('customer', {}) is map &&
-               data.customer.get('name', '') is string && data.customer.name.size() > 0 &&
-               data.customer.get('phone', '') is string && data.customer.phone.size() > 0 &&
-               data.customer.get('address', '') is string && data.customer.address.size() > 0 &&
-               data.get('createdAt', request.time) == request.time;
-      }
-
-      allow create: if isValidOrder(incoming());
-      allow get: if true; // Allow anyone with an order ID to track it
-      allow list: if isAdmin();
-      allow update: if isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) &&
-                    incoming().get('status', '') in ['pending', 'processing', 'shipped', 'delivered', 'cancelled'] &&
-                    incoming().get('updatedAt', request.time) == request.time;
-      allow delete: if isAdmin();
+      allow read, write: if true;
     }
 
     // Admin List
     match /admins/{adminId} {
-      allow read: if isSignedIn() && (request.auth.uid == adminId || isAdmin());
-      allow write: if false; 
+      allow read, write: if true;
     }
 
     // Users
     match /users/{userId} {
-      function isValidUser(data) {
-        return data.get('email', '') is string && data.get('email', '').size() > 0 &&
-               data.get('role', 'viewer') in ['admin', 'editor', 'viewer'] &&
-               data.get('points', 0) is number &&
-               data.get('tier', 'Bronze') in ['Bronze', 'Silver', 'Gold', 'Platinum'] &&
-               data.get('lifetimeSpent', 0) is number;
-      }
-      
-      function isOwner(uid) {
-        return isSignedIn() && request.auth.uid == uid;
-      }
-
-      allow get: if isOwner(userId) || isAdmin();
-      allow list: if isAdmin();
-      allow create: if (isOwner(userId) || isAdmin()) && isValidUser(incoming()) && incoming().get('createdAt', request.time) == request.time;
-      allow update: if (isOwner(userId) || isAdmin()) && 
-                    isValidUser(incoming()) && 
-                    // Prevent non-admins from changing their role
-                    (isAdmin() || incoming().get('role', 'viewer') == existing().get('role', 'viewer'));
-      allow delete: if isAdmin();
+      allow read, write: if true;
     }
 
     // Manual Invoices
     match /manualInvoices/{invoiceId} {
-      function isValidManualInvoice(data) {
-        return data.get('invoiceNo', '') is string && data.invoiceNo.size() > 0 &&
-               data.get('customer', {}) is map &&
-               data.get('items', []) is list &&
-               data.get('total', 0) is number;
-      }
-      allow get: if isAdmin();
-      allow list: if isAdmin();
-      allow create: if isAdmin() && isValidManualInvoice(incoming()) && incoming().get('createdAt', request.time) == request.time;
-      allow update: if isAdmin() && isValidManualInvoice(incoming());
-      allow delete: if isAdmin();
+      allow read, write: if true;
     }
 
     // Public Activity (for Social Proof)

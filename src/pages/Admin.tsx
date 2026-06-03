@@ -219,32 +219,32 @@ export default function Admin() {
     setLoginError('');
     setIsLoggingIn(true);
     try {
-      const allUsers = await adminService.getUsers();
-      const matched = allUsers?.find(
-        (u: any) => 
-          u.name?.trim().toLowerCase() === loginUsername.trim().toLowerCase() && 
-          u.password?.toString().trim() === loginPassword.trim()
-      );
+      const usernameDocId = loginUsername.trim().toLowerCase().replace(/\s+/g, '');
+      const passwordVal = loginPassword.trim();
 
-      if (matched) {
-        const mockUser = {
-          uid: matched.id,
-          displayName: matched.name,
-          email: matched.email || (matched.name?.toLowerCase() + '@ahoroon.com'),
-          role: matched.role || 'viewer',
-          permissions: matched.permissions || [],
-          isCustom: true
+      // Retrieve their custom user profile details directly
+      const userProfile = await adminService.getUserProfile(usernameDocId);
+      
+      if (userProfile && userProfile.password?.toString().trim() === passwordVal) {
+        const customUser = {
+          uid: usernameDocId,
+          displayName: userProfile.name || loginUsername,
+          email: userProfile.email || `${usernameDocId}@ahoroon.com`,
+          role: userProfile.role || 'viewer',
+          permissions: userProfile.permissions || [],
+          isCustom: true,
+          username: usernameDocId
         };
-        setUser(mockUser);
+        setUser(customUser);
         setIsAdmin(true);
-        localStorage.setItem('customAdminUser', JSON.stringify(mockUser));
+        localStorage.setItem('customAdminUser', JSON.stringify(customUser));
         loadData();
       } else {
         setLoginError('ইউজারনেম অথবা পাসওয়ার্ড ভুল হয়েছে।');
       }
     } catch (err) {
-      console.error(err);
-      setLoginError('লগইন করার সময় একটি সমস্যা হয়েছে।');
+      console.error('Custom login error details:', err);
+      setLoginError('ইউজারনেম অথবা পাসওয়ার্ড ভুল হয়েছে।');
     } finally {
       setIsLoggingIn(false);
     }
@@ -356,7 +356,7 @@ export default function Admin() {
           ) : (
             <span className="font-logo text-xl text-[#005900] logo-text">আহরোণ</span>
           )}
-          <span className="text-[9px] bg-emerald-50 text-emerald-700 font-extrabold border border-emerald-100/50 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Admin</span>
+          <span className="text-xs bg-emerald-50 text-emerald-700 font-extrabold border border-emerald-200 px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">Admin</span>
         </div>
 
         <div className="w-9 h-9 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-xs overflow-hidden shrink-0">
@@ -397,7 +397,7 @@ export default function Admin() {
                   ) : (
                     <span className="font-logo text-2xl text-[#005900] logo-text">আহরোণ</span>
                   )}
-                  <span className="text-[9px] bg-emerald-50 text-emerald-700 font-extrabold border border-emerald-100/50 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Admin</span>
+                  <span className="text-xs bg-emerald-50 text-emerald-700 font-black border border-emerald-150 px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">Admin</span>
                 </div>
                 
                 <button 
@@ -454,7 +454,7 @@ export default function Admin() {
                 />
                 <SidebarItem 
                   icon={ReceiptText} 
-                  label="Manual Invoices" 
+                  label="Sales"
                   active={activeTab === 'invoices'} 
                   onClick={() => { setActiveTab('invoices'); setIsMobileSidebarOpen(false); }} 
                   showLabel
@@ -557,7 +557,7 @@ export default function Admin() {
           />
           <SidebarItem 
             icon={ReceiptText} 
-            label="Manual Invoices" 
+            label="Sales" 
             active={activeTab === 'invoices'} 
             onClick={() => setActiveTab('invoices')} 
             showLabel
@@ -600,7 +600,9 @@ export default function Admin() {
       <main className="flex-1 overflow-y-auto p-4 md:p-10 min-w-0">
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
           <div>
-            <h1 className="text-3xl font-display font-black text-accent-deep capitalize">{activeTab}</h1>
+            <h1 className="text-3xl font-display font-black text-accent-deep capitalize">
+              {activeTab === 'invoices' ? 'All Sales' : activeTab}
+            </h1>
             <p className="text-gray-500 text-sm">Welcome back, Admin</p>
           </div>
           
@@ -646,7 +648,7 @@ export default function Admin() {
                 className="bg-primary text-white p-2 sm:px-4 sm:py-2 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20 group"
               >
                 <Plus size={20} />
-                <span className="hidden sm:block">Create Invoice</span>
+                <span className="hidden sm:block">Add New Sale</span>
               </button>
             )}
           </div>
@@ -659,7 +661,7 @@ export default function Admin() {
               <StatsCard label="Total Orders" value={orders.length} icon={ShoppingCart} color="bg-purple-500" />
               <StatsCard label="Categories" value={categories.length} icon={Tag} color="bg-orange-500" />
               <StatsCard label="Users" value={users.length} icon={Users} color="bg-emerald-500" />
-              <StatsCard label="Manual Invoices" value={manualInvoices.length} icon={ReceiptText} color="bg-rose-500" />
+              <StatsCard label="Sales" value={manualInvoices.length} icon={ReceiptText} color="bg-rose-500" />
             </div>
             
             <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
@@ -799,8 +801,8 @@ export default function Admin() {
                 setDeleteConfirm({
                   id,
                   type: 'invoice',
-                  title: 'Delete Manual Invoice',
-                  message: `Are you sure you want to permanently delete custom invoice #${inv?.invoiceNumber || ''}?`
+                  title: 'Delete Sale',
+                  message: `Are you sure you want to permanently delete custom sale #${inv?.invoiceNo || inv?.invoiceNumber || ''}?`
                 });
               }}
             />
@@ -836,6 +838,7 @@ export default function Admin() {
             invoice={editingManualInvoice} 
             onClose={() => setIsManualInvoiceModalOpen(false)} 
             onSave={loadData} 
+            products={products}
           />
         )}
         {viewingOrder && (
@@ -949,79 +952,180 @@ function ProductsTable({ products, categories, onEdit, onDelete }: any) {
   };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left">
-      <thead className="bg-surface border-b border-gray-50">
-        <tr>
-          <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Product</th>
-          <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Category</th>
-          <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Price</th>
-          <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Status</th>
-          <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 text-right">Actions</th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-gray-50">
+    <div>
+      {/* Mobile Stack Cards Layout */}
+      <div className="grid grid-cols-1 gap-4 md:hidden">
         {products.map((p: Product, idx: number) => (
-          <tr key={`product-row-${p.id || 'new'}-${idx}`} className="hover:bg-surface/50 transition-colors">
-            <td className="px-6 py-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden flex items-center justify-center relative">
-                  {p.image ? (
-                    <img 
-                      src={p.image} 
-                      className="w-full h-full object-cover" 
-                      referrerPolicy="no-referrer"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=No+Image';
-                      }}
-                    />
-                  ) : (
-                    <ImageIcon size={20} className="text-gray-300" />
-                  )}
-                </div>
-                <div>
-                  <span className="block font-bold text-accent-deep text-sm line-clamp-1">{p.name}</span>
+          <div key={`product-card-${p.id || 'new'}-${idx}`} className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden flex items-center justify-center relative shadow-sm shrink-0">
+                {p.image ? (
+                  <img 
+                    src={p.image} 
+                    className="w-full h-full object-cover" 
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=No+Image';
+                    }}
+                  />
+                ) : (
+                  <ImageIcon size={24} className="text-gray-300" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="block font-black text-accent-deep text-base truncate mb-1">{p.name}</span>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="bg-surface px-2.5 py-1 rounded-full text-[11px] font-bold text-primary uppercase border border-primary/10">
+                    {getCategoryName(p.category)}
+                  </span>
                   {p.size && (
-                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
+                    <span className="text-[11px] text-gray-500 font-bold bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100 uppercase tracking-wide">
                       {p.size} {p.unit || 'pcs'}
                     </span>
                   )}
                 </div>
               </div>
-            </td>
-            <td className="px-6 py-4">
-              <span className="bg-surface px-3 py-1 rounded-full text-[10px] font-bold text-primary uppercase">{getCategoryName(p.category)}</span>
-            </td>
-            <td className="px-6 py-4 font-bold text-sm">৳{p.price}</td>
-            <td className="px-6 py-4">
-              {p.isFlashSale ? (
-                <span className="flex items-center gap-1 text-orange-500 font-bold text-[10px]">
-                  <Clock size={12} /> FLASH
-                </span>
-              ) : (
-                <span className="text-gray-400 font-medium text-[10px]">Regular</span>
-              )}
-            </td>
-            <td className="px-6 py-4">
-              <div className="flex justify-end gap-2">
-                <button 
-                  onClick={() => onEdit(p)}
-                  className="p-2 text-gray-400 hover:text-primary transition-colors"
-                >
-                  <Edit2 size={18} />
-                </button>
-                <button 
-                  onClick={() => onDelete(p.id)}
-                  className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                >
-                  <Trash2 size={18} />
-                </button>
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-gray-50 flex-wrap gap-2 text-sm">
+              <div className="space-y-0.5">
+                <span className="text-xs text-gray-400 block font-bold uppercase tracking-wider">Price (মূল্য)</span>
+                <span className="font-extrabold text-base text-accent-deep">৳{p.price}</span>
               </div>
-            </td>
-          </tr>
+              <div className="space-y-0.5">
+                <span className="text-xs text-gray-400 block font-bold uppercase tracking-wider">Stock (স্টক)</span>
+                {p.stock === undefined || p.stock === null ? (
+                  <span className="text-gray-500 font-bold">-</span>
+                ) : p.stock <= 0 ? (
+                  <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded-md text-xs font-black uppercase tracking-wide border border-red-100">Stock Out</span>
+                ) : p.stock <= 5 ? (
+                  <span className="bg-amber-50 text-amber-700 px-2 py-0.5 rounded-md text-xs font-black uppercase font-mono tracking-wide border border-amber-100">Low ({p.stock})</span>
+                ) : (
+                  <span className="bg-green-50 text-green-700 px-2 py-0.5 rounded-md text-xs font-black uppercase font-mono tracking-wide border border-green-100">{p.stock}</span>
+                )}
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-xs text-gray-400 block font-bold uppercase tracking-wider">Type (টাইপ)</span>
+                {p.isFlashSale ? (
+                  <span className="bg-orange-50 text-orange-600 px-2.5 py-0.5 rounded-md text-xs font-black uppercase border border-orange-100 flex items-center gap-1">
+                    <Clock size={12} className="shrink-0 animate-pulse" /> FLASH
+                  </span>
+                ) : (
+                  <span className="bg-gray-50 text-gray-500 px-2.5 py-0.5 rounded-md text-xs font-bold border border-gray-100">Regular</span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-50">
+              <button 
+                onClick={() => onEdit(p)}
+                className="flex items-center gap-1 px-3 py-2 bg-primary/5 text-primary hover:bg-primary/10 rounded-xl text-xs font-bold transition-all"
+              >
+                <Edit2 size={16} /> Edit
+              </button>
+              <button 
+                onClick={() => onDelete(p.id)}
+                className="flex items-center gap-1 px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold transition-all"
+              >
+                <Trash2 size={16} /> Delete
+              </button>
+            </div>
+          </div>
         ))}
-      </tbody>
-    </table>
+        {products.length === 0 && (
+          <div className="text-center py-8 text-gray-400 font-medium">No products found (কোনো পণ্য পাওয়া যায়নি)</div>
+        )}
+      </div>
+
+      {/* Desktop Layout */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full text-left">
+          <thead className="bg-surface border-b border-gray-100">
+            <tr>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">Product (পণ্য)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">Category (ক্যাটেগরি)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">Price (মূল্য)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">Stock (স্টক)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">Status (স্ট্যাটাস)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-400 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {products.map((p: Product, idx: number) => (
+              <tr key={`product-row-${p.id || 'new'}-${idx}`} className="hover:bg-surface/50 transition-colors">
+                <td className="px-6 py-5">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden flex items-center justify-center relative shadow-sm">
+                      {p.image ? (
+                        <img 
+                          src={p.image} 
+                          className="w-full h-full object-cover" 
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=No+Image';
+                          }}
+                        />
+                      ) : (
+                        <ImageIcon size={22} className="text-gray-300" />
+                      )}
+                    </div>
+                    <div>
+                      <span className="block font-black text-accent-deep text-base md:text-lg line-clamp-1 mb-1">{p.name}</span>
+                      {p.size && (
+                        <span className="text-xs text-gray-500 font-bold bg-gray-50 px-2 py-0.5 rounded border border-gray-100 uppercase tracking-wide">
+                          {p.size} {p.unit || 'pcs'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-5">
+                  <span className="bg-surface px-3 py-1.5 rounded-full text-xs font-bold text-primary uppercase border border-primary/10">{getCategoryName(p.category)}</span>
+                </td>
+                <td className="px-6 py-5 font-extrabold text-base text-accent-deep whitespace-nowrap">৳{p.price}</td>
+                <td className="px-6 py-5">
+                  {p.stock === undefined || p.stock === null ? (
+                    <span className="text-gray-400 text-xs">-</span>
+                  ) : p.stock <= 0 ? (
+                    <span className="bg-red-50 text-red-600 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide border border-red-105">Stock Out</span>
+                  ) : p.stock <= 5 ? (
+                    <span className="bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-xs font-bold uppercase font-mono tracking-wide border border-amber-105">Low Stock ({p.stock})</span>
+                  ) : (
+                    <span className="bg-green-50 text-green-700 px-3 py-1.5 rounded-full text-xs font-bold uppercase font-mono tracking-wide border border-green-105">{p.stock} {p.unit || 'pcs'}</span>
+                  )}
+                </td>
+                <td className="px-6 py-5">
+                  {p.isFlashSale ? (
+                    <span className="flex items-center gap-1.5 text-orange-600 font-black text-xs uppercase bg-orange-50 px-2.5 py-1 rounded-full border border-orange-100 w-max">
+                      <Clock size={14} className="animate-pulse" /> FLASH
+                    </span>
+                  ) : (
+                    <span className="text-gray-500 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100 font-bold text-xs">Regular</span>
+                  )}
+                </td>
+                <td className="px-6 py-5">
+                  <div className="flex justify-end gap-3">
+                    <button 
+                      onClick={() => onEdit(p)}
+                      className="p-2 sm:p-2.5 text-gray-500 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
+                      title="Edit Product"
+                    >
+                      <Edit2 size={20} />
+                    </button>
+                    <button 
+                      onClick={() => onDelete(p.id)}
+                      className="p-2 sm:p-2.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                      title="Delete Product"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -1048,66 +1152,138 @@ function OrdersTable({ orders, onUpdateStatus, onView }: any) {
   };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left">
-        <thead className="bg-surface border-b border-gray-50">
-          <tr>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Order ID</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Customer</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Items</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Total</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Status</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 text-right">Update</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-50">
-          {orders.map((o: any, idx: number) => {
-            const Icon = getStatusIcon(o.status);
-            return (
-              <tr key={`order-row-${o.id || 'order'}-${idx}`} className="hover:bg-surface/50 transition-colors">
-                <td className="px-6 py-4 font-mono text-xs text-primary font-bold">#{o.id ? o.id.slice(0, 8) : 'NEW'}</td>
-                <td className="px-6 py-4">
-                  <div className="text-sm font-bold text-accent-deep">{o.customer?.name}</div>
-                  <div className="text-[10px] text-gray-400">{o.customer?.phone}</div>
-                  <div className="text-[10px] text-gray-400 italic line-clamp-1">{o.customer?.address}</div>
-                </td>
-                <td className="px-6 py-4 text-sm font-medium text-gray-500">{o.items.length} items</td>
-                <td className="px-6 py-4 font-bold text-sm">৳{o.total}</td>
-                <td className="px-6 py-4">
-                  <span className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase", getStatusColor(o.status))}>
-                    <Icon size={12} /> {o.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex justify-end gap-3 items-center">
-                    <button 
-                      onClick={() => onView(o)}
-                      className="p-2 text-gray-400 hover:text-primary transition-colors bg-white rounded-lg shadow-sm border border-gray-100"
-                      title="View Details"
-                    >
-                      <Eye size={18} />
-                    </button>
-                    <select 
-                      value={o.status}
-                      onChange={async (e) => {
-                        await adminService.updateOrderStatus(o.id, e.target.value);
-                        onUpdateStatus();
-                      }}
-                      className="text-[10px] font-bold bg-surface border border-gray-100 rounded-lg p-1.5 outline-none focus:ring-2 focus:ring-primary/20"
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="processing">Processing</option>
-                      <option value="shipped">Shipped</option>
-                      <option value="delivered">Delivered</option>
-                      <option value="cancelled">Cancelled</option>
-                    </select>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <div>
+      {/* Mobile Stack Cards Layout */}
+      <div className="grid grid-cols-1 gap-4 md:hidden">
+        {orders.map((o: any, idx: number) => {
+          const Icon = getStatusIcon(o.status);
+          return (
+            <div key={`order-card-${o.id || 'order'}-${idx}`} className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-sm text-primary font-black">
+                  #{o.id ? o.id.slice(0, 8).toUpperCase() : 'NEW'}
+                </span>
+                <span className={cn("inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase border", getStatusColor(o.status))}>
+                  <Icon size={12} className="shrink-0" /> {o.status}
+                </span>
+              </div>
+
+              <div className="space-y-1.5">
+                <p className="text-base font-black text-accent-deep">{o.customer?.name}</p>
+                <p className="text-xs text-gray-500 font-semibold flex items-center gap-1">
+                  <Phone size={12} className="text-gray-400" /> {o.customer?.phone}
+                </p>
+                <p className="text-xs text-gray-400 font-medium italic line-clamp-2 bg-gray-50 p-2 rounded-xl border border-gray-100">
+                  {o.customer?.address}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between pt-3 border-t border-gray-50 flex-wrap gap-2 text-sm">
+                <div className="space-y-0.5">
+                  <span className="text-xs text-gray-400 block font-bold uppercase tracking-wider">Items</span>
+                  <span className="font-semibold text-gray-700">{o.items.length} items</span>
+                </div>
+                <div className="space-y-0.5">
+                  <span className="text-xs text-gray-400 block font-bold uppercase tracking-wider">Total</span>
+                  <span className="font-black text-accent-deep">৳{o.total}</span>
+                </div>
+                <div className="space-y-0.5 flex-1 min-w-[120px] text-right">
+                  <span className="text-xs text-gray-400 block font-bold uppercase tracking-wider mb-1">Status (স্ট্যাটাস)</span>
+                  <select 
+                    value={o.status}
+                    onChange={async (e) => {
+                      await adminService.updateOrderStatus(o.id, e.target.value);
+                      onUpdateStatus();
+                    }}
+                    className="text-xs font-bold bg-white border border-gray-200 rounded-xl p-1.5 outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer w-full text-center"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-3 border-t border-gray-50">
+                <button 
+                  onClick={() => onView(o)}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100 rounded-xl text-xs font-bold border border-gray-200 shadow-sm transition-all w-full justify-center"
+                >
+                  <Eye size={16} /> View Details
+                </button>
+              </div>
+            </div>
+          );
+        })}
+        {orders.length === 0 && (
+          <div className="text-center py-8 text-gray-400 font-medium">No orders found (কোনো অর্ডার পাওয়া যায়নি)</div>
+        )}
+      </div>
+
+      {/* Desktop Layout */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full text-left">
+          <thead className="bg-surface border-b border-gray-100">
+            <tr>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">Order ID (অর্ডার আইডি)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">Customer (গ্রাহক)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">Items (আইটেম)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">Total (মোট)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">Status (স্ট্যাটাস)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-400 text-right">Update (আপডেট)</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {orders.map((o: any, idx: number) => {
+              const Icon = getStatusIcon(o.status);
+              return (
+                <tr key={`order-row-${o.id || 'order'}-${idx}`} className="hover:bg-surface/50 transition-colors">
+                  <td className="px-6 py-5 font-mono text-sm text-primary font-black">#{o.id ? o.id.slice(0, 8).toUpperCase() : 'NEW'}</td>
+                  <td className="px-6 py-5">
+                    <div className="text-base font-black text-accent-deep mb-1">{o.customer?.name}</div>
+                    <div className="text-xs text-gray-500 font-semibold mb-1 flex items-center gap-1"><Phone size={12} className="text-gray-400" /> {o.customer?.phone}</div>
+                    <div className="text-xs text-gray-400 font-medium line-clamp-1 italic max-w-xs">{o.customer?.address}</div>
+                  </td>
+                  <td className="px-6 py-5 text-sm md:text-base font-semibold text-gray-700">{o.items.length} items</td>
+                  <td className="px-6 py-5 font-black text-base text-accent-deep">৳{o.total}</td>
+                  <td className="px-6 py-5">
+                    <span className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase border", getStatusColor(o.status))}>
+                      <Icon size={14} /> {o.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-5">
+                    <div className="flex justify-end gap-3 items-center">
+                      <button 
+                        onClick={() => onView(o)}
+                        className="p-2 text-gray-500 hover:text-primary transition-all bg-white hover:bg-gray-50 rounded-xl shadow-sm border border-gray-150"
+                        title="View Details"
+                      >
+                        <Eye size={20} />
+                      </button>
+                      <select 
+                        value={o.status}
+                        onChange={async (e) => {
+                          await adminService.updateOrderStatus(o.id, e.target.value);
+                          onUpdateStatus();
+                        }}
+                        className="text-xs font-bold bg-white border border-gray-200 rounded-xl p-2 outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer"
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -1326,7 +1502,107 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
       if (!contentRef.current || isGenerating) return;
       setIsGenerating(true);
       
+      const parseColorVal = (valStr: string, maxVal: number, isHue = false): number => {
+        if (valStr.endsWith('%')) {
+          return (parseFloat(valStr) / 100) * (isHue ? 360 : 1);
+        }
+        let v = parseFloat(valStr);
+        if (isNaN(v)) return 0;
+        if (isHue) return v;
+        return v;
+      };
+
+      const oklabToRgbStr = (L: number, a: number, b: number, alpha: number): string => {
+        const l_ = L + 0.3963377774 * a + 0.2157037208 * b;
+        const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
+        const s_ = L - 0.0894841775 * a - 1.2914855480 * b;
+        
+        const l = l_ * l_ * l_;
+        const m = m_ * m_ * m_;
+        const s = s_ * s_ * s_;
+        
+        const rL = +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
+        const gL = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
+        const bL = -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s;
+        
+        const toSRGB = (c: number) => {
+          if (c <= 0.0031308) return 12.92 * c;
+          return 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+        };
+        
+        let r = Math.round(Math.max(0, Math.min(1, toSRGB(rL))) * 255);
+        let g = Math.round(Math.max(0, Math.min(1, toSRGB(gL))) * 255);
+        let bColor = Math.round(Math.max(0, Math.min(1, toSRGB(bL))) * 255);
+        
+        if (alpha === 1) {
+          return `rgb(${r}, ${g}, ${bColor})`;
+        } else {
+          return `rgba(${r}, ${g}, ${bColor}, ${alpha})`;
+        }
+      };
+
+      const oklchToRgb = (innerStr: string): string => {
+        const parts = innerStr.trim().split(/[\s/]+/).filter(Boolean);
+        if (parts.length < 3) return '#10b981';
+        let L = parseColorVal(parts[0], 1);
+        let C = parseColorVal(parts[1], 0.4);
+        let H = parseColorVal(parts[2], 360, true);
+        let alpha = parts[3] !== undefined ? parseColorVal(parts[3], 1) : 1;
+        const hRad = (H * Math.PI) / 180;
+        const a = C * Math.cos(hRad);
+        const b = C * Math.sin(hRad);
+        return oklabToRgbStr(L, a, b, alpha);
+      };
+
+      const oklabToRgb = (innerStr: string): string => {
+        const parts = innerStr.trim().split(/[\s/]+/).filter(Boolean);
+        if (parts.length < 3) return '#10b981';
+        let L = parseColorVal(parts[0], 1);
+        let a = parseColorVal(parts[1], 1);
+        let b = parseColorVal(parts[2], 1);
+        let alpha = parts[3] !== undefined ? parseColorVal(parts[3], 1) : 1;
+        return oklabToRgbStr(L, a, b, alpha);
+      };
+
+      const replaceOklchAndOklab = (str: string): string => {
+        if (typeof str !== 'string') return str;
+        let res = str;
+        res = res.replace(/oklch\(([^)]+)\)/g, (_, inner) => {
+          try { return oklchToRgb(inner); } catch (e) { return '#10b981'; }
+        });
+        res = res.replace(/oklab\(([^)]+)\)/g, (_, inner) => {
+          try { return oklabToRgb(inner); } catch (e) { return '#10b981'; }
+        });
+        return res;
+      };
+
+      const originalGetComputedStyle = window.getComputedStyle;
+      
+      const cssStyleDeclarationHandler = {
+        get(target: any, prop: string | symbol, receiver: any) {
+          if (prop === 'getPropertyValue') {
+            return function(this: any, property: string) {
+              const val = target.getPropertyValue(property);
+              return replaceOklchAndOklab(val);
+            };
+          }
+          const value = Reflect.get(target, prop, receiver);
+          if (typeof prop === 'string' && typeof value === 'string') {
+            return replaceOklchAndOklab(value);
+          }
+          if (typeof value === 'function') {
+            return value.bind(target);
+          }
+          return value;
+        }
+      };
+
       try {
+        window.getComputedStyle = function(elt, pseudoElt) {
+          const style = originalGetComputedStyle(elt, pseudoElt);
+          return new Proxy(style, cssStyleDeclarationHandler);
+        };
+
         const element = contentRef.current;
         const opt = {
           margin: 0,
@@ -1339,12 +1615,16 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
             scrollY: 0,
             scrollX: 0,
             onclone: (clonedDoc: Document) => {
-              // html2canvas parser crashes on oklch() colors.
-              // We need to strip or replace oklch references in the cloned document's styles.
+              // html2canvas parser crashes on oklch() and oklab() colors.
+              // We need to strip or replace oklch/oklab references in the cloned document's styles.
               const styles = clonedDoc.querySelectorAll('style');
               styles.forEach(style => {
-                if (style.textContent?.includes('oklch')) {
-                  style.textContent = style.textContent.replace(/oklch\([^)]+\)/g, '#10b981');
+                let content = style.textContent || '';
+                if (content.includes('oklch') || content.includes('oklab')) {
+                  content = content
+                    .replace(/oklch\([^)]+\)/g, '#10b981')
+                    .replace(/oklab\([^)]+\)/g, '#10b981');
+                  style.textContent = content;
                 }
               });
             }
@@ -1359,6 +1639,7 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
         // Fallback to print (Save as PDF) if html2pdf fails
         window.print();
       } finally {
+        window.getComputedStyle = originalGetComputedStyle;
         setIsGenerating(false);
       }
     };
@@ -1399,13 +1680,10 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
         </button>
       </div>
 
-      <div ref={contentRef} className="bg-white w-full max-w-4xl min-h-screen sm:min-h-0 mt-20 sm:my-12 p-4 sm:p-12 shadow-2xl relative print:shadow-none print:w-full print:max-w-none print:p-0 print:my-0 print:mt-0" id="invoice-content">
-        {/* Fancy Border - Mobile Only */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent-deep to-primary print:hidden" />
-        
+      <div ref={contentRef} className="bg-white w-full max-w-4xl min-h-screen sm:min-h-0 mt-20 sm:my-12 p-6 sm:p-12 shadow-2xl relative print:shadow-none print:w-full print:max-w-none print:p-0 print:my-0 print:mt-0" id="invoice-content">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start gap-6 sm:gap-8 mb-8 sm:mb-12">
-          <div className="space-y-4 w-full md:w-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-6 sm:gap-8 mb-8 sm:mb-12 border-b border-gray-200 pb-8">
+          <div className="space-y-3 w-full md:w-auto">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-xl flex items-center justify-center text-white rotate-3 shadow-lg shadow-primary/20 shrink-0">
                 <span className="text-xl sm:text-2xl font-black italic uppercase">আ</span>
@@ -1414,163 +1692,123 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
                 আহরোণ <span className="text-accent-deep not-italic font-sans text-lg sm:text-2xl block xs:inline">(Aharon)</span>
               </h1>
             </div>
-            <div className="text-[10px] sm:text-xs text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
-              <p>Specialized in Quality Products</p>
-              <div className="mt-2 space-y-1.5 text-gray-500 normal-case tracking-normal">
-                <p className="flex items-start gap-2"><MapPin size={12} className="text-primary mt-0.5 shrink-0" /> Mirpur-10, Dhaka-1216, Bangladesh</p>
-                <p className="flex items-start gap-2"><FileText size={12} className="text-primary mt-0.5 shrink-0" /> TIN: 123456789101 | BIN: 001234567-0101</p>
-                <p className="flex items-start gap-2"><User size={12} className="text-primary mt-0.5 shrink-0" /> Support: +880 1700-000000 | reocleanproperties@gmail.com</p>
-              </div>
+            <div className="text-xs text-gray-500 space-y-1">
+              <p className="font-extrabold uppercase text-[10px] text-gray-400 tracking-wider">Specialized in Quality Products</p>
+              <p>Mirpur-10, Dhaka-1216, Bangladesh</p>
+              <p>TIN: 123456789101 | BIN: 001234567-0101</p>
+              <p>Support: +880 1700-000000 | reocleanproperties@gmail.com</p>
             </div>
           </div>
-          <div className="w-full md:w-auto text-left md:text-right space-y-4 pt-4 md:pt-0 border-t border-gray-100 md:border-0">
-            <div className="inline-block px-4 sm:px-6 py-2 bg-accent-deep text-white font-display font-black text-lg sm:text-xl italic skew-x-[-12deg]">
-              <span className="inline-block skew-x-[12deg]">INVOICE</span>
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex justify-start md:justify-end gap-2 text-xs font-bold">
-                <span className="text-gray-400 uppercase tracking-tighter">Invoice No:</span>
+          <div className="w-full md:w-auto text-left md:text-right space-y-2 pt-4 md:pt-0 border-t border-gray-100 md:border-0">
+            <h2 className="text-3xl font-display font-black text-primary tracking-widest uppercase">INVOICE</h2>
+            <div className="space-y-1 text-sm font-bold text-gray-600">
+              <div className="flex justify-start md:justify-end gap-2">
+                <span className="text-gray-400 uppercase tracking-wider text-xs">Invoice No:</span>
                 <span className="text-accent-deep">#{ (order.invoiceNo || order.id).slice(-8).toUpperCase() }</span>
               </div>
-              <div className="flex justify-start md:justify-end gap-2 text-xs font-bold">
-                <span className="text-gray-400 uppercase tracking-tighter">Date:</span>
+              <div className="flex justify-start md:justify-end gap-2">
+                <span className="text-gray-400 uppercase tracking-wider text-xs">Date:</span>
                 <span className="text-accent-deep">{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
-              </div>
-              <div className="flex justify-start md:justify-end gap-2 text-xs font-bold">
-                <span className="text-gray-400 uppercase tracking-tighter">Order Status:</span>
-                <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 text-[10px]">{order.status?.toUpperCase() || 'PAID'}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Info Grid - Visual Styling */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 mb-8 sm:mb-12">
-          <div className="relative p-5 sm:p-6 bg-surface rounded-3xl border border-gray-100 overflow-hidden print:border-gray-200">
-            <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
-            <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-4">BILLING TO</h3>
-            <div className="space-y-2">
-              <p className="text-lg sm:text-xl font-black text-accent-deep leading-tight">{order.customerName || order.customer?.name}</p>
-              <div className="space-y-1.5">
-                <p className="text-sm font-bold text-gray-500 flex items-center gap-2">
-                  <Phone size={14} className="text-primary/40 shrink-0" /> {order.phoneNumber || order.customer?.phone}
-                </p>
-                <p className="text-sm text-gray-400 font-medium leading-relaxed flex items-start gap-2">
-                  <MapPin size={14} className="text-primary/40 mt-1 flex-shrink-0" /> {order.address || order.customer?.address}
-                </p>
-              </div>
+        {/* Info Section - Simple Text Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 sm:mb-12 border-b border-gray-200 pb-8">
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Billing To (বিলিং তথ্য)</h3>
+            <div className="space-y-1">
+              <p className="text-lg font-black text-accent-deep">{order.customerName || order.customer?.name}</p>
+              <p className="text-sm text-gray-600 font-bold">Phone: {order.phoneNumber || order.customer?.phone}</p>
+              <p className="text-sm text-gray-500">Address: {order.address || order.customer?.address}</p>
             </div>
           </div>
           
-          <div className="relative p-5 sm:p-6 bg-accent-deep rounded-3xl overflow-hidden text-white shadow-xl shadow-accent-deep/20 print:shadow-none print:text-black print:bg-surface print:border print:border-gray-200">
-            <h3 className="text-[10px] font-black text-white/40 print:text-accent-deep uppercase tracking-[0.2em] mb-4">PAYMENT DETAILS</h3>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-bold opacity-60">Payment Method</span>
-                <span className="font-black">{order.paymentMethod || 'Cash on Delivery'}</span>
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Payment Details (পেমেন্ট তথ্য)</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-500 font-bold">Payment Method:</span>
+                <span className="font-extrabold text-accent-deep">{order.paymentMethod || 'Cash on Delivery'}</span>
               </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-bold opacity-60">Total Items</span>
-                <span className="font-black text-right">{order.items?.reduce((acc: number, item: any) => acc + (item.cartQuantity || 1), 0) || 0} Units</span>
+              <div className="flex justify-between">
+                <span className="text-gray-500 font-bold">Total Items:</span>
+                <span className="font-extrabold text-accent-deep">{order.items?.reduce((acc: number, item: any) => acc + (item.cartQuantity || item.quantity || 1), 0) || 0} Units</span>
               </div>
-              <div className="pt-4 border-t border-white/10 print:border-accent-deep/10 flex justify-between items-center">
-                <span className="text-xs font-bold uppercase italic tracking-widest">Grand Total</span>
-                <span className="text-2xl sm:text-3xl font-display font-black tracking-tighter">৳{order.total}</span>
+              <div className="flex justify-between border-t border-gray-100 pt-2">
+                <span className="text-gray-500 font-bold">Payment Status:</span>
+                <span className="font-extrabold text-green-600">{order.status?.toUpperCase() || 'PAID'}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Table - Enhanced UI */}
-        <div className="mb-8 sm:mb-12 overflow-x-auto -mx-4 sm:mx-0">
-          <div className="min-w-[600px] px-4 sm:px-0">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b-2 border-accent-deep text-xs">
-                  <th className="px-3 py-4 text-left font-black text-accent-deep uppercase tracking-widest w-16">No</th>
-                  <th className="px-3 py-4 text-left font-black text-accent-deep uppercase tracking-widest">Item Description</th>
-                  <th className="px-3 py-4 text-center font-black text-accent-deep uppercase tracking-widest w-16">Qty</th>
-                  <th className="px-3 py-4 text-right font-black text-accent-deep uppercase tracking-widest">Price</th>
-                  <th className="px-3 py-4 text-right font-black text-accent-deep uppercase tracking-widest">Total</th>
+        {/* Table - Simple Minimalist */}
+        <div className="mb-8 sm:mb-12 overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-300 text-xs text-gray-500 uppercase tracking-wider font-bold">
+                <th className="py-3 text-left w-12 font-extrabold">No</th>
+                <th className="py-3 text-left font-extrabold">Item Description</th>
+                <th className="py-3 text-center w-20 font-extrabold">Qty</th>
+                <th className="py-3 text-right w-28 font-extrabold">Unit Price</th>
+                <th className="py-3 text-right w-28 font-extrabold">Total</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-150 text-sm">
+              {order.items?.map((item: any, i: number) => (
+                <tr key={`inv-item-${item.id || 'inv'}-${i}`} className="hover:bg-gray-50/50">
+                  <td className="py-4 text-gray-400 font-bold">{(i + 1).toString().padStart(2, '0')}</td>
+                  <td className="py-4">
+                    <p className="font-extrabold text-accent-deep">{item.name}</p>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-wide">Unit: {item.unit || 'pcs'}</p>
+                  </td>
+                  <td className="py-4 text-center font-extrabold text-gray-700">
+                    {item.cartQuantity || item.quantity || 1}
+                  </td>
+                  <td className="py-4 text-right font-medium text-gray-600">৳{item.price}</td>
+                  <td className="py-4 text-right font-extrabold text-accent-deep">৳{item.price * (item.cartQuantity || item.quantity || 1)}</td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {order.items?.map((item: any, i: number) => (
-                  <tr key={`inv-item-${item.id || 'inv'}-${i}`} className="text-sm group hover:bg-surface/50 transition-colors">
-                    <td className="px-3 py-5 font-bold text-gray-400">{(i + 1).toString().padStart(2, '0')}</td>
-                    <td className="px-3 py-5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-surface rounded-lg overflow-hidden border border-gray-50 flex-shrink-0 print:hidden">
-                          <img 
-                            src={item.image} 
-                            className="w-full h-full object-cover" 
-                            onError={(e) => (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=Item'}
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-bold text-accent-deep text-sm line-clamp-1">{item.name}</p>
-                          <p className="text-[10px] text-gray-400 font-bold uppercase">UNIT: {item.unit || 'pcs'}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-3 py-5 text-center font-black text-gray-600">
-                      {item.cartQuantity || 1}
-                    </td>
-                    <td className="px-3 py-5 text-right font-bold text-gray-500 whitespace-nowrap">৳{item.price}</td>
-                    <td className="px-3 py-5 text-right font-black text-accent-deep whitespace-nowrap">৳{item.price * (item.cartQuantity || 1)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         {/* Summary Footer */}
-        <div className="flex flex-col md:flex-row justify-between items-start gap-8 sm:gap-12">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-8 sm:gap-12 border-t border-gray-200 pt-8">
           <div className="flex-1 space-y-6 w-full">
-            <div className="p-5 sm:p-6 bg-surface rounded-3xl border border-dashed border-gray-200">
-              <h4 className="text-[10px] font-black text-primary uppercase mb-3 px-1">Terms & Conditions</h4>
-              <ul className="text-[10px] text-gray-400 font-bold space-y-1.5 list-disc pl-5 leading-relaxed">
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Terms & Conditions</h4>
+              <ul className="text-xs text-gray-500 space-y-1 pl-4 list-disc leading-relaxed">
                 <li>Goods once sold are not returnable without valid reason.</li>
                 <li>Please keep this invoice for any warranty claims.</li>
                 <li>This is a computer-generated invoice, no signature is required.</li>
               </ul>
             </div>
-            <div className="flex items-center gap-4 px-2">
-              <div className="w-16 h-16 opacity-10 print:opacity-30 shrink-0">
-                <svg viewBox="0 0 100 100" className="w-full h-full fill-accent-deep">
-                  <rect x="10" y="10" width="80" height="80" rx="10" />
-                  <path d="M25 25h10v10H25zM45 25h10v10H45zM65 25h10v10H65zM25 45h10v10H25zM25 65h10v10H25z" fill="white" />
-                </svg>
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] font-black text-accent-deep uppercase truncate">Scan to Verify</p>
-                <p className="text-[9px] text-gray-400 font-medium truncate">Valid Aharon Official Document</p>
-              </div>
-            </div>
           </div>
 
-          <div className="w-full md:w-80 space-y-3">
-            <div className="flex justify-between items-center px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-tighter">
-              <span>Basic Amount</span>
-              <span className="text-accent-deep">৳{order.total}</span>
+          <div className="w-full md:w-85 space-y-2">
+            <div className="flex justify-between items-center text-sm text-gray-600 font-medium">
+              <span>Basic Amount:</span>
+              <span className="font-extrabold text-accent-deep">৳{order.total}</span>
             </div>
-            <div className="flex justify-between items-center px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-tighter">
-              <span>Delivery Charge</span>
-              <span className="text-emerald-500 font-black">FREE</span>
+            <div className="flex justify-between items-center text-sm text-gray-600 font-medium">
+              <span>Delivery Charge:</span>
+              <span className="text-green-600 font-extrabold">FREE</span>
             </div>
-            <div className="flex justify-between items-center px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-tighter border-b border-gray-100 pb-4">
-              <span>Discount</span>
-              <span className="text-rose-500">৳0</span>
+            <div className="flex justify-between items-center text-sm text-gray-600 font-medium border-b border-gray-200 pb-2">
+              <span>Discount:</span>
+              <span className="text-rose-600 font-extrabold">৳0</span>
             </div>
-            <div className="flex justify-between items-center p-5 sm:p-6 bg-primary text-white rounded-3xl shadow-xl shadow-primary/20 print:bg-white print:text-black print:border-2 print:border-accent-deep print:shadow-none">
-              <span className="font-display font-black text-lg sm:text-xl uppercase italic tracking-widest">NET TOTAL</span>
-              <span className="text-2xl sm:text-3xl font-display font-black tracking-tighter">৳{order.total}</span>
+            <div className="flex justify-between items-center pt-2">
+              <span className="text-base font-bold text-accent-deep uppercase tracking-wider">NET TOTAL</span>
+              <span className="text-3xl font-display font-black text-primary">৳{order.total}</span>
             </div>
             
-            <div className="pt-10 sm:pt-12 text-center">
-              <div className="w-32 sm:w-40 h-0.5 bg-gray-100 mx-auto mb-2" />
-              <p className="text-[10px] font-black text-gray-400 uppercase">Authorized Signature</p>
+            <div className="pt-8 text-center font-bold">
+              <div className="w-32 h-px bg-gray-300 mx-auto mb-1" />
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider">Authorized Signature</p>
             </div>
           </div>
         </div>
@@ -1578,7 +1816,7 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
         {/* Bottom Bar */}
         <div className="mt-12 sm:mt-16 py-4 border-t border-gray-50 text-center flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8">
           <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Official Invoice &copy; {new Date().getFullYear()} Aharon Shopping | MIRPUR DHAKA</p>
-          <p className="text-[9px] font-black text-primary uppercase tracking-widest italic">A product of reocleanproperties@gmail.com</p>
+          <p className="text-[9px] font-black text-primary uppercase tracking-widest italic font-sans leading-none">A product of reocleanproperties@gmail.com</p>
         </div>
       </div>
     </motion.div>
@@ -1600,7 +1838,8 @@ function ProductModal({ product, onClose, onSave, categories }: any) {
     unit: product?.unit || 'pcs',
     size: product?.size || 1,
     moq: product?.moq || 1,
-    step: product?.step || 1
+    step: product?.step || 1,
+    stock: product?.stock !== undefined ? product.stock : 100
   });
   const [loading, setLoading] = useState(false);
   const [generatingAi, setGeneratingAi] = useState(false);
@@ -1819,6 +2058,17 @@ function ProductModal({ product, onClose, onSave, categories }: any) {
               </select>
             </div>
             <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Stock Quantity (স্টক পরিমাণ)</label>
+              <input 
+                required
+                type="number"
+                min="0"
+                className="w-full bg-surface p-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                value={formData.stock}
+                onChange={e => setFormData({...formData, stock: Number(e.target.value)})}
+              />
+            </div>
+            <div className="space-y-2">
               <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Visibility</label>
               <div className="flex gap-4 pt-2">
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -2001,105 +2251,216 @@ function ProductModal({ product, onClose, onSave, categories }: any) {
 
 function UsersTable({ users, onEdit, onDelete }: any) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left">
-        <thead className="bg-surface border-b border-gray-50">
-          <tr>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">User</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Role</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Permissions</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-50">
-          {users.map((u: any, idx: number) => (
-            <tr key={`user-row-${u.id || 'user'}-${idx}`} className="hover:bg-surface/50 transition-colors">
-              <td className="px-6 py-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                    {u.name ? u.name[0].toUpperCase() : u.email[0].toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-accent-deep">{u.name || 'No Name'}</p>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <p className="text-[10px] text-gray-400">{u.email}</p>
-                      {u.password && (
-                        <span className="px-1.5 py-0.5 bg-yellow-50 text-yellow-600 rounded font-mono font-bold text-[9px]">
-                          Pass: {u.password}
-                        </span>
-                      )}
+    <div>
+      {/* Mobile Stack Cards Layout */}
+      <div className="grid grid-cols-1 gap-4 md:hidden">
+        {users.map((u: any, idx: number) => (
+          <div key={`user-card-${u.id || 'user'}-${idx}`} className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-base shadow-inner">
+                {u.name ? u.name[0].toUpperCase() : u.email[0].toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-base font-black text-accent-deep mb-0.5 truncate">{u.name || 'No Name'}</p>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <p className="text-xs text-gray-500 font-medium truncate">{u.email}</p>
+                  <span className={cn(
+                    "px-2 py-0.5 rounded-full text-[10px] font-bold border lowercase",
+                    u.role === 'admin' ? "bg-red-50 text-red-600 border-red-100" : 
+                    u.role === 'editor' ? "bg-blue-50 text-blue-600 border-blue-100" : "bg-gray-50 text-gray-500 border-gray-150"
+                  )}>
+                    {u.role}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {u.password && (
+              <div className="bg-yellow-50 p-2.5 rounded-xl border border-yellow-105 flex items-center justify-between text-xs">
+                <span className="text-yellow-800 font-bold">Password (পাসওয়ার্ড):</span>
+                <span className="font-mono font-black text-yellow-700 bg-white px-2 py-0.5 rounded border border-yellow-100">{u.password}</span>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider block">Permissions (অনুমোদন):</span>
+              <div className="flex flex-wrap gap-1.5">
+                {(u.permissions || []).map((p: string, i: number) => (
+                  <span key={`user-perm-${u.id || 'new'}-${p}-${i}`} className="text-xs bg-surface px-2.5 py-1 rounded-lg border border-gray-100 text-gray-500 font-bold uppercase tracking-wide">
+                    {p}
+                  </span>
+                ))}
+                {(!u.permissions || u.permissions.length === 0) && <span className="text-xs text-gray-400 italic">None</span>}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-50">
+              <button 
+                onClick={() => onEdit(u)}
+                className="flex items-center gap-1 px-3 py-2 bg-primary/5 text-primary hover:bg-primary/10 rounded-xl text-xs font-bold transition-all"
+              >
+                <Edit2 size={16} /> Edit
+              </button>
+              <button 
+                onClick={() => onDelete(u.id)}
+                className="flex items-center gap-1 px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold transition-all"
+              >
+                <Trash2 size={16} /> Delete
+              </button>
+            </div>
+          </div>
+        ))}
+        {users.length === 0 && (
+          <div className="text-center py-8 text-gray-400 font-medium">No users found (কোনো ব্যবহারকারী পাওয়া যায়নি)</div>
+        )}
+      </div>
+
+      {/* Desktop Layout */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full text-left">
+          <thead className="bg-surface border-b border-gray-100">
+            <tr>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">User (ব্যবহারকারী)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">Role (ভূমিকা)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">Permissions (অনুমোদন)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-400 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {users.map((u: any, idx: number) => (
+              <tr key={`user-row-${u.id || 'user'}-${idx}`} className="hover:bg-surface/50 transition-colors">
+                <td className="px-6 py-5">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-base shadow-inner">
+                      {u.name ? u.name[0].toUpperCase() : u.email[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-base font-black text-accent-deep mb-1">{u.name || 'No Name'}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-xs text-gray-500 font-medium">{u.email}</p>
+                        {u.password && (
+                          <span className="px-2 py-0.5 bg-yellow-50 text-yellow-700 rounded-lg border border-yellow-105 font-mono font-bold text-xs">
+                            Pass: {u.password}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </td>
-              <td className="px-6 py-4 lowercase">
-                <span className={cn(
-                  "px-3 py-1 rounded-full text-[10px] font-bold",
-                  u.role === 'admin' ? "bg-red-50 text-red-500" : 
-                  u.role === 'editor' ? "bg-blue-50 text-blue-500" : "bg-gray-50 text-gray-400"
-                )}>
-                  {u.role}
-                </span>
-              </td>
-              <td className="px-6 py-4">
-                <div className="flex flex-wrap gap-1">
-                  {(u.permissions || []).map((p: string, i: number) => (
-                    <span key={`user-perm-${u.id || 'new'}-${p}-${i}`} className="text-[8px] bg-surface px-1.5 py-0.5 rounded border border-gray-100 text-gray-400 font-bold uppercase">
-                      {p}
-                    </span>
-                  ))}
-                  {(!u.permissions || u.permissions.length === 0) && <span className="text-[10px] text-gray-300">None</span>}
-                </div>
-              </td>
-              <td className="px-6 py-4">
-                <div className="flex justify-end gap-2">
-                  <button onClick={() => onEdit(u)} className="p-2 text-gray-400 hover:text-primary transition-colors"><Edit2 size={18} /></button>
-                  <button onClick={() => onDelete(u.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><Trash2 size={18} /></button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                </td>
+                <td className="px-6 py-5 lowercase">
+                  <span className={cn(
+                    "px-3 py-1.5 rounded-full text-xs font-bold border",
+                    u.role === 'admin' ? "bg-red-50 text-red-600 border-red-100" : 
+                    u.role === 'editor' ? "bg-blue-50 text-blue-600 border-blue-105" : "bg-gray-50 text-gray-500 border-gray-150"
+                  )}>
+                    {u.role}
+                  </span>
+                </td>
+                <td className="px-6 py-5">
+                  <div className="flex flex-wrap gap-1.5">
+                    {(u.permissions || []).map((p: string, i: number) => (
+                      <span key={`user-perm-${u.id || 'new'}-${p}-${i}`} className="text-xs bg-surface px-2.5 py-1 rounded-lg border border-gray-100 text-gray-500 font-bold uppercase tracking-wide">
+                        {p}
+                      </span>
+                    ))}
+                    {(!u.permissions || u.permissions.length === 0) && <span className="text-xs text-gray-400">None</span>}
+                  </div>
+                </td>
+                <td className="px-6 py-5">
+                  <div className="flex justify-end gap-3">
+                    <button onClick={() => onEdit(u)} className="p-2 text-gray-500 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"><Edit2 size={20} /></button>
+                    <button onClick={() => onDelete(u.id)} className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={20} /></button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
 function InvoicesTable({ invoices, onView, onDelete }: any) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left">
-        <thead className="bg-surface border-b border-gray-50">
-          <tr>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Invoice No</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Customer</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Items</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Total</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-50">
-          {invoices.map((inv: any, idx: number) => (
-            <tr key={`inv-row-${inv.id || 'inv'}-${idx}`} className="hover:bg-surface/50 transition-colors">
-              <td className="px-6 py-4 font-mono text-xs text-primary font-bold">{inv.invoiceNo}</td>
-              <td className="px-6 py-4">
-                <div className="text-sm font-bold text-accent-deep">{inv.customer?.name}</div>
-                <div className="text-[10px] text-gray-400">{inv.customer?.phone}</div>
-              </td>
-              <td className="px-6 py-4 text-sm text-gray-500 font-medium">
-                {inv.items?.length || 0} items
-              </td>
-              <td className="px-6 py-4 font-bold text-sm">৳{inv.total}</td>
-              <td className="px-6 py-4">
-                <div className="flex justify-end gap-2">
-                  <button onClick={() => onView(inv)} className="p-2 text-gray-400 hover:text-primary transition-colors bg-white rounded-lg border border-gray-100 shadow-sm"><Printer size={18} /></button>
-                  <button onClick={() => onDelete(inv.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><Trash2 size={18} /></button>
-                </div>
-              </td>
+    <div>
+      {/* Mobile Stack Cards Layout */}
+      <div className="grid grid-cols-1 gap-4 md:hidden">
+        {invoices.map((inv: any, idx: number) => (
+          <div key={`inv-card-${inv.id || 'inv'}-${idx}`} className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs text-primary font-bold bg-primary/5 px-2.5 py-1 rounded-full border border-primary/10">Invoice: {inv.invoiceNo}</span>
+              <span className="font-black text-sm text-accent-deep">৳{inv.total}</span>
+            </div>
+
+            <div className="space-y-1">
+              <div className="text-base font-black text-accent-deep">{inv.customer?.name}</div>
+              <div className="text-xs text-gray-500 font-semibold flex items-center gap-1">
+                <Phone size={12} className="text-gray-400" /> {inv.customer?.phone}
+              </div>
+            </div>
+
+            <div className="text-xs text-gray-600 font-semibold bg-gray-50 p-2.5 rounded-xl border border-gray-100 flex items-center justify-between">
+              <span>Items Summary:</span>
+              <span className="font-bold">{inv.items?.length || 0} items</span>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-50">
+              <button 
+                onClick={() => onView(inv)}
+                className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-primary/5 text-primary hover:bg-primary/10 rounded-xl text-xs font-bold transition-all border border-primary/10"
+              >
+                <Printer size={16} /> Print
+              </button>
+              <button 
+                onClick={() => onDelete(inv.id)}
+                className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold transition-all border border-red-100"
+              >
+                <Trash2 size={16} /> Delete
+              </button>
+            </div>
+          </div>
+        ))}
+        {invoices.length === 0 && (
+          <div className="text-center py-8 text-gray-400 font-medium">No sales found (কোনো সেলস পাওয়া যায়নি)</div>
+        )}
+      </div>
+
+      {/* Desktop Layout */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full text-left">
+          <thead className="bg-surface border-b border-gray-100">
+            <tr>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">Invoice No (ইনভয়েস নং)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">Customer (গ্রাহক)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">Items (আইটেম)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500">Total (মোট)</th>
+              <th className="px-6 py-5 text-xs md:text-sm font-bold uppercase tracking-wider text-gray-400 text-right">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {invoices.map((inv: any, idx: number) => (
+              <tr key={`inv-row-${inv.id || 'inv'}-${idx}`} className="hover:bg-surface/50 transition-colors">
+                <td className="px-6 py-5 font-mono text-sm text-primary font-black">{inv.invoiceNo}</td>
+                <td className="px-6 py-5">
+                  <div className="text-base font-black text-accent-deep mb-1">{inv.customer?.name}</div>
+                  <div className="text-xs text-gray-500 font-semibold flex items-center gap-1"><Phone size={12} className="text-gray-400" /> {inv.customer?.phone}</div>
+                </td>
+                <td className="px-6 py-5 text-sm md:text-base font-semibold text-gray-700">
+                  {inv.items?.length || 0} items
+                </td>
+                <td className="px-6 py-5 font-black text-base text-accent-deep">৳{inv.total}</td>
+                <td className="px-6 py-5">
+                  <div className="flex justify-end gap-3">
+                    <button onClick={() => onView(inv)} className="p-2 text-gray-500 hover:text-primary hover:bg-primary/5 transition-all bg-white rounded-xl border border-gray-150 shadow-sm" title="Print Invoice"><Printer size={20} /></button>
+                    <button onClick={() => onDelete(inv.id)} className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all" title="Delete Invoice"><Trash2 size={20} /></button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -2243,7 +2604,7 @@ function UserModal({ user, onClose, onSave }: any) {
   );
 }
 
-function ManualInvoiceModal({ invoice, onClose, onSave }: any) {
+function ManualInvoiceModal({ invoice, onClose, onSave, products = [] }: any) {
   const [formData, setFormData] = useState({
     invoiceNo: invoice?.invoiceNo || `INV-${Date.now().toString().slice(-6)}`,
     customer: {
@@ -2257,6 +2618,7 @@ function ManualInvoiceModal({ invoice, onClose, onSave }: any) {
     status: invoice?.status || 'New Invoice'
   });
   const [loading, setLoading] = useState(false);
+  const [activeDropdownIndex, setActiveDropdownIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const total = formData.items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
@@ -2277,14 +2639,39 @@ function ManualInvoiceModal({ invoice, onClose, onSave }: any) {
     }));
   };
 
-  const updateItem = (idx: number, field: string, value: any) => {
-    const newItems = [...formData.items];
-    newItems[idx] = { ...newItems[idx], [field]: value };
-    setFormData({ ...formData, items: newItems });
+  const updateItem = (idx: number, field: string | Record<string, any>, value?: any) => {
+    setFormData(prev => {
+      const newItems = [...prev.items];
+      if (typeof field === 'object') {
+        newItems[idx] = { ...newItems[idx], ...field };
+      } else {
+        newItems[idx] = { ...newItems[idx], [field]: value };
+      }
+      return { ...prev, items: newItems };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Core stock validation: "Stock 0 product add kora jabe na"
+    for (const item of formData.items) {
+      if (!item.name) continue;
+      const matched = products.find((p: any) => p.name.toLowerCase() === item.name.toLowerCase());
+      if (matched) {
+        if (matched.stock !== undefined && matched.stock !== null) {
+          if (matched.stock <= 0) {
+            alert(`"${item.name}" is out of stock! (স্টক নেই!)`);
+            return;
+          }
+          if (item.quantity > matched.stock) {
+            alert(`"${item.name}" quantity (${item.quantity}) exceeds available stock (${matched.stock})!`);
+            return;
+          }
+        }
+      }
+    }
+
     setLoading(true);
     try {
       if (invoice?.id) {
@@ -2318,7 +2705,7 @@ function ManualInvoiceModal({ invoice, onClose, onSave }: any) {
         </button>
 
         <h2 className="text-2xl font-display font-black text-accent-deep mb-8 flex items-center gap-3">
-          <ReceiptText /> {invoice?.id ? 'Edit Manual Invoice' : 'Create Manual Invoice'}
+          <ReceiptText /> {invoice?.id ? 'Edit Sale' : 'Add New Sale'}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-8">
@@ -2380,48 +2767,149 @@ function ManualInvoiceModal({ invoice, onClose, onSave }: any) {
             </div>
             
             <div className="space-y-3">
-              {formData.items.map((item: any, idx: number) => (
-                <div key={`admin-manual-inv-item-${idx}`} className="flex gap-3 items-end bg-gray-50 p-4 rounded-2xl group transition-all hover:bg-white hover:shadow-md border border-transparent hover:border-gray-100">
-                  <div className="flex-1 space-y-2">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase">Item Name</label>
-                    <input 
-                      required
-                      placeholder="e.g. Sauf/Mouri"
-                      className="w-full bg-white p-3 rounded-xl border border-gray-100 text-sm"
-                      value={item.name}
-                      onChange={e => updateItem(idx, 'name', e.target.value)}
-                    />
+              {formData.items.map((item: any, idx: number) => {
+                const matchedProd = products.find((p: any) => p.name.toLowerCase() === item.name.toLowerCase());
+                const maxQty = matchedProd && matchedProd.stock !== undefined && matchedProd.stock !== null ? matchedProd.stock : undefined;
+                return (
+                  <div key={`admin-manual-inv-item-${idx}`} className="flex gap-3 items-start bg-gray-50 p-4 rounded-2xl group transition-all hover:bg-white hover:shadow-md border border-transparent hover:border-gray-100">
+                    <div className="flex-1 space-y-2 relative">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Item Name / Product</label>
+                      <div className="relative">
+                        <input 
+                          id="sale-product-search-input"
+                          required
+                          placeholder="Search product (খুঁজতে লিখুন)"
+                          className="w-full bg-white p-3 pr-10 rounded-xl border border-gray-100 text-sm focus:border-primary/40 focus:ring-2 focus:ring-primary/10 outline-none transition-all font-bold"
+                          value={item.name}
+                          onChange={e => {
+                            updateItem(idx, 'name', e.target.value);
+                            setActiveDropdownIndex(idx);
+                          }}
+                          onFocus={() => setActiveDropdownIndex(idx)}
+                        />
+                        <Search size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      </div>
+
+                      {activeDropdownIndex === idx && (
+                        <>
+                          <div 
+                            className="fixed inset-0 z-10" 
+                            onClick={() => setActiveDropdownIndex(null)}
+                          />
+                          <div className="absolute left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border border-gray-150 rounded-2xl shadow-xl z-20 divide-y divide-gray-50 py-1">
+                            {products
+                              .filter((p: any) => 
+                                !item.name || p.name.toLowerCase().includes(item.name.toLowerCase())
+                              )
+                              .map((p: any) => {
+                                const isOutOfStock = p.stock !== undefined && p.stock !== null && p.stock <= 0;
+                                return (
+                                  <button
+                                    type="button"
+                                    key={p.id}
+                                    disabled={isOutOfStock}
+                                    onMouseDown={(e) => {
+                                      e.preventDefault();
+                                      updateItem(idx, {
+                                        name: p.name,
+                                        price: p.price,
+                                        unit: p.unit || 'pcs'
+                                      });
+                                      setActiveDropdownIndex(null);
+                                    }}
+                                    className={cn(
+                                      "w-full text-left px-4 py-3 flex items-center justify-between text-sm transition-all",
+                                      isOutOfStock 
+                                        ? "bg-gray-50/50 text-gray-400 cursor-not-allowed opacity-60" 
+                                        : "hover:bg-primary/5 text-accent-deep hover:text-primary active:bg-primary/10"
+                                    )}
+                                  >
+                                    <div>
+                                      <span className="font-extrabold block">{p.name}</span>
+                                      {p.size && (
+                                        <span className="text-[10px] text-gray-600 font-bold bg-gray-100 px-1.5 py-0.5 rounded-lg uppercase mt-1 inline-block">
+                                          {p.size} {p.unit || 'pcs'}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                      <span className="font-black text-sm block">৳{p.price}</span>
+                                      {isOutOfStock ? (
+                                        <span className="text-[10px] bg-red-50 text-red-600 px-2.5 py-0.5 rounded-full font-black border border-red-100 uppercase tracking-wide">Stock Out (স্টক নেই)</span>
+                                      ) : (
+                                        <span className={cn(
+                                          "text-[10px] px-2.5 py-0.5 rounded-full font-black border uppercase tracking-wide",
+                                          p.stock <= 5 
+                                            ? "bg-amber-50 text-amber-700 border-amber-100" 
+                                            : "bg-green-50 text-green-700 border-green-150"
+                                        )}>
+                                          Stock: {p.stock !== undefined && p.stock !== null ? p.stock : '∞'}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            {products.filter((p: any) => 
+                              !item.name || p.name.toLowerCase().includes(item.name.toLowerCase())
+                            ).length === 0 && (
+                              <div className="px-4 py-4 text-xs text-gray-400 font-bold text-center">
+                                No matching products (কোনো পণ্য মেলেনি)
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <div className="w-24 space-y-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Price</label>
+                      <input 
+                        required
+                        type="number"
+                        className="w-full bg-white p-3 rounded-xl border border-gray-100 text-sm font-bold"
+                        value={item.price}
+                        onChange={e => updateItem(idx, 'price', Number(e.target.value))}
+                      />
+                    </div>
+                    <div className="w-20 space-y-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Qty</label>
+                      <input 
+                        required
+                        type="number"
+                        min={1}
+                        max={maxQty}
+                        className="w-full bg-white p-3 rounded-xl border border-gray-100 text-sm font-bold"
+                        value={item.quantity}
+                        onChange={e => {
+                          const val = Number(e.target.value);
+                          if (maxQty !== undefined && val > maxQty) {
+                            alert(`Cannot add more than available stock (${maxQty})!`);
+                            updateItem(idx, 'quantity', maxQty);
+                          } else {
+                            updateItem(idx, 'quantity', val);
+                          }
+                        }}
+                      />
+                      {maxQty !== undefined && (
+                        <p className={cn(
+                          "text-[9px] font-bold tracking-tight text-center truncate",
+                          item.quantity > maxQty ? "text-red-600" : "text-gray-400"
+                        )}>
+                          Stock: {maxQty}
+                        </p>
+                      )}
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => removeItem(idx)}
+                      disabled={formData.items.length === 1}
+                      className="p-3 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all self-center mt-5"
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </div>
-                  <div className="w-24 space-y-2">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase">Price</label>
-                    <input 
-                      required
-                      type="number"
-                      className="w-full bg-white p-3 rounded-xl border border-gray-100 text-sm font-bold"
-                      value={item.price}
-                      onChange={e => updateItem(idx, 'price', Number(e.target.value))}
-                    />
-                  </div>
-                  <div className="w-20 space-y-2">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase">Qty</label>
-                    <input 
-                      required
-                      type="number"
-                      className="w-full bg-white p-3 rounded-xl border border-gray-100 text-sm font-bold"
-                      value={item.quantity}
-                      onChange={e => updateItem(idx, 'quantity', Number(e.target.value))}
-                    />
-                  </div>
-                  <button 
-                    type="button" 
-                    onClick={() => removeItem(idx)}
-                    disabled={formData.items.length === 1}
-                    className="p-3 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -2455,7 +2943,7 @@ function ManualInvoiceModal({ invoice, onClose, onSave }: any) {
             {loading ? (
               <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
-              <><Save size={24} /> {invoice?.id ? 'Update Invoice' : 'Create & Save Invoice'}</>
+              <><Save size={24} /> {invoice?.id ? 'Update Sale' : 'Create & Save Sale'}</>
             )}
           </button>
         </form>

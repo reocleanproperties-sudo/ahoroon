@@ -36,6 +36,10 @@ export default function ProductDetail() {
     const step = product?.step || 1;
     setQuantity(prev => {
       const newVal = parseFloat((prev + step).toFixed(3));
+      if (product?.stock !== undefined && newVal > product.stock) {
+        alert(`দুঃখিত, সর্বোচ্চ স্টক পরিমাণ রয়েছে ${product.stock} ${product.unit || 'pcs'}`);
+        return prev;
+      }
       return newVal;
     });
   };
@@ -57,15 +61,28 @@ export default function ProductDetail() {
     }
     const num = parseFloat(val);
     if (!isNaN(num)) {
-      setQuantity(num);
+      if (product?.stock !== undefined && num > product.stock) {
+        alert(`দুঃখিত, সর্বোচ্চ স্টক পরিমাণ রয়েছে ${product.stock} ${product.unit || 'pcs'}`);
+        setQuantity(product.stock);
+      } else {
+        setQuantity(num);
+      }
     }
   };
 
   const validateAndAdd = () => {
     if (!product) return;
+    if (product.stock !== undefined && product.stock <= 0) {
+      alert("দুঃখিত, পণ্যটি বর্তমানে স্টকে নেই।");
+      return;
+    }
     const moq = product.moq || 1;
     if (quantity < moq) {
       alert(`Minimum order quantity is ${moq} ${product.unit || 'pcs'}`);
+      return;
+    }
+    if (product.stock !== undefined && quantity > product.stock) {
+      alert(`দুঃখিত, উপলব্ধ স্টক ${product.stock} ${product.unit || 'pcs'}`);
       return;
     }
     addToCart(product, quantity, { size: selectedSize, color: selectedColor });
@@ -103,6 +120,19 @@ export default function ProductDetail() {
 
   const quickBuy = () => {
     if (!product) return;
+    if (product.stock !== undefined && product.stock <= 0) {
+      alert("দুঃখিত, পণ্যটি বর্তমানে স্টকে নেই।");
+      return;
+    }
+    const moq = product.moq || 1;
+    if (quantity < moq) {
+      alert(`Minimum order quantity is ${moq} ${product.unit || 'pcs'}`);
+      return;
+    }
+    if (product.stock !== undefined && quantity > product.stock) {
+      alert(`দুঃখিত, উপলব্ধ স্টক ${product.stock} ${product.unit || 'pcs'}`);
+      return;
+    }
     addToCart(product, quantity, { size: selectedSize, color: selectedColor });
     navigate('/checkout');
   };
@@ -183,7 +213,18 @@ export default function ProductDetail() {
             <h1 className="text-3xl md:text-5xl font-display font-black leading-tight">
               {product.name}
             </h1>
-            <p className="text-2xl font-bold text-gray-900">৳{product.price}</p>
+            <div className="flex flex-wrap items-center gap-4">
+              <p className="text-2xl font-bold text-gray-900">৳{product.price}</p>
+              {product.stock !== undefined && (
+                product.stock <= 0 ? (
+                  <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold uppercase">স্টক আউট (Out of Stock)</span>
+                ) : product.stock <= 5 ? (
+                  <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold uppercase font-mono">সীমিত স্টক: {product.stock} {product.unit || 'pcs'}</span>
+                ) : (
+                  <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase font-mono">স্টক আছে: {product.stock} {product.unit || 'pcs'}</span>
+                )
+              )}
+            </div>
           </div>
 
           <p className="text-gray-500 leading-relaxed text-sm md:text-base">
@@ -289,17 +330,19 @@ export default function ProductDetail() {
             <motion.button 
               whileTap={{ scale: 0.95 }}
               onClick={validateAndAdd}
-              className="flex-1 bg-primary text-white rounded-[1.5rem] py-4 font-bold flex items-center justify-center gap-2 shadow-xl shadow-primary/20 hover:brightness-110 transition-all tap-feedback"
+              disabled={product?.stock !== undefined && product.stock <= 0}
+              className="flex-1 bg-primary text-white rounded-[1.5rem] py-4 font-bold flex items-center justify-center gap-2 shadow-xl shadow-primary/20 hover:brightness-110 transition-all tap-feedback disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ShoppingBag size={20} />
-              <span className="hidden sm:inline">Add to Cart</span>
+              <span className="hidden sm:inline w-max">Add to Cart</span>
               <span className="sm:hidden">Add</span>
             </motion.button>
             <button 
               onClick={quickBuy}
-              className="flex-1 bg-secondary text-white rounded-[1.5rem] py-4 font-bold flex items-center justify-center gap-2 shadow-xl shadow-secondary/20 hover:brightness-110 transition-all tap-feedback"
+              disabled={product?.stock !== undefined && product.stock <= 0}
+              className="flex-1 bg-secondary text-white rounded-[1.5rem] py-4 font-bold flex items-center justify-center gap-2 shadow-xl shadow-secondary/20 hover:brightness-110 transition-all tap-feedback disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span className="hidden sm:inline">Buy Now</span>
+              <span className="hidden sm:inline w-max">Buy Now</span>
               <span className="sm:hidden">Buy</span>
             </button>
           </div>

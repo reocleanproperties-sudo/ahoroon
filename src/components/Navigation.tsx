@@ -79,9 +79,9 @@ export const TopNav = () => {
         {/* Right: Actions */}
         <div className="flex items-center gap-2 shrink-0">
           {isAdmin && (
-            <Link to="/admin" className="p-2 md:p-2.5 text-primary hover:bg-primary/5 transition-colors rounded-xl flex items-center gap-1.5 text-[11px] md:text-xs font-bold mr-1">
-              <Settings size={16} />
-              <span className="hidden md:block font-sans">Admin</span>
+            <Link to="/admin" className="px-3 py-2 md:px-4 md:py-2.5 text-primary hover:bg-primary/10 bg-primary/5 border border-primary/20 transition-all rounded-xl flex items-center gap-2 text-xs md:text-sm font-black mr-2 shadow-sm hover:scale-[1.02] active:scale-[0.98]">
+              <Settings size={18} className="animate-spin-slow" />
+              <span className="font-sans">Admin</span>
             </Link>
           )}
           <motion.button 

@@ -6,7 +6,7 @@ import { ShoppingBag, ChevronLeft, Truck, CreditCard, ShieldCheck, User } from '
 import { useCart } from '../hooks/useCart';
 import { useLoyalty } from '../context/LoyaltyContext';
 import { auth, db } from '../lib/firebase';
-import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
 
 export default function Checkout() {
   const { cart, totalPrice: total, clearCart } = useCart();
@@ -79,6 +79,35 @@ export default function Checkout() {
       };
 
       const docRef = await addDoc(collection(db, 'orders'), orderData);
+
+      // Decrement product stock in Firestore
+      for (const item of cart) {
+        if (item.id) {
+          try {
+            const productRef = doc(db, 'products', item.id);
+            const productDoc = await getDoc(productRef);
+            if (productDoc.exists()) {
+              const productData = productDoc.data();
+              if (productData && typeof productData.stock === 'number') {
+                const currentStock = productData.stock;
+                const newStock = Math.max(0, currentStock - item.cartQuantity);
+                await updateDoc(productRef, { stock: newStock });
+              }
+            }
+          } catch (stockErr) {
+            console.error("Failed to decrement stock for item:", item.id, stockErr);
+          }
+        }
+      }
+
+      // Clear product list caches in localStorage so fresh stock levels are fetched
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('products')) {
+          localStorage.removeItem(key);
+          i--; // Adjust index since we removed an item
+        }
+      }
       
       // Add to public activity for Social Proof
       await addDoc(collection(db, 'public_activity'), {
