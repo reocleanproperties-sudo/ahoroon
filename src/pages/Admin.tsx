@@ -1620,14 +1620,16 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
       const originalGetComputedStyle = window.getComputedStyle;
       
       const cssStyleDeclarationHandler = {
-        get(target: any, prop: string | symbol, receiver: any) {
+        get(target: any, prop: string | symbol) {
           if (prop === 'getPropertyValue') {
             return function(this: any, property: string) {
               const val = target.getPropertyValue(property);
               return replaceOklchAndOklab(val);
             };
           }
-          const value = Reflect.get(target, prop, receiver);
+          // Do not pass the receiver (the Proxy itself) to Reflect.get.
+          // Native CSSStyleDeclaration methods throw "Illegal invocation" if receiver is not a real CSSStyleDeclaration.
+          const value = Reflect.get(target, prop);
           if (typeof prop === 'string' && typeof value === 'string') {
             return replaceOklchAndOklab(value);
           }
@@ -1674,7 +1676,8 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
         };
 
         // Use html2pdf for high-quality PDF generation
-        await html2pdf().set(opt).from(element).save();
+        const html2pdfFunc = (html2pdf as any).default || html2pdf;
+        await html2pdfFunc().set(opt).from(element).save();
       } catch (error) {
         console.error('PDF Generation Error:', error);
         // Fallback to print (Save as PDF) if html2pdf fails
@@ -1876,7 +1879,7 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
           <div className="flex-1" />
 
           {/* Bottom Bar */}
-          <div className="py-3 border-t border-gray-50 text-center flex flex-row justify-between items-center gap-4">
+          <div className="py-3 mt-4 border-t border-gray-50 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4 text-center sm:text-left print:flex-row print:justify-between print:mt-0">
             <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Official Invoice &copy; {new Date().getFullYear()} Aharon Shopping | MOHAMMADPUR DHAKA</p>
             <p className="text-[9px] font-black text-primary uppercase tracking-widest italic font-sans leading-none">A product of info@ahoron.com</p>
           </div>
