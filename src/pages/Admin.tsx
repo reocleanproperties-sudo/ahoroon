@@ -1505,10 +1505,38 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
         })
         .catch(err => console.error("Error loading settings in InvoiceModal:", err));
     }, []);
+
+    useEffect(() => {
+      const handleAfterPrint = () => {
+        window.focus();
+        if (document.activeElement && 'blur' in document.activeElement) {
+          (document.activeElement as any).blur();
+        }
+        document.body.focus();
+      };
+      window.addEventListener('afterprint', handleAfterPrint);
+      return () => {
+        window.removeEventListener('afterprint', handleAfterPrint);
+      };
+    }, []);
     
     const handlePrint = () => {
       // Native browser print is the most robust solution for A4/PDF
       window.print();
+      // Ensure the window/document gets focus back inside iframe preview environments
+      setTimeout(() => {
+        window.focus();
+        if (document.activeElement && 'blur' in document.activeElement) {
+          (document.activeElement as any).blur();
+        }
+        document.body.focus();
+      }, 500);
+    };
+
+    const handleBackdropClick = (e: React.MouseEvent) => {
+      if (e.target === e.currentTarget) {
+        onClose();
+      }
     };
 
     const handleDownloadPDF = async () => {
@@ -1663,10 +1691,11 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] flex flex-col items-center justify-start bg-black/95 backdrop-blur-md overflow-y-auto py-24 px-2 sm:px-4"
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-[60] flex flex-col items-center justify-start bg-black/95 backdrop-blur-md overflow-y-auto py-24 px-2 sm:px-4 cursor-pointer"
     >
       {/* Controls - Sticky on Mobile */}
-      <div className="fixed top-0 left-0 right-0 p-4 flex flex-wrap justify-center sm:justify-end gap-2 bg-black/50 backdrop-blur-md sm:bg-transparent sm:backdrop-blur-none sm:absolute sm:top-8 sm:right-8 z-[100] print:hidden">
+      <div className="fixed top-0 left-0 right-0 p-4 flex flex-wrap justify-center sm:justify-end gap-2 bg-black/50 backdrop-blur-md sm:bg-transparent sm:backdrop-blur-none sm:absolute sm:top-8 sm:right-8 z-[100] print:hidden" onClick={(e) => e.stopPropagation()}>
         <button 
           onClick={handlePrint}
           className="bg-primary text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl shadow-xl flex items-center gap-2 font-bold hover:scale-105 transition-all active:scale-95 text-sm sm:text-base"
@@ -1693,7 +1722,7 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
         </button>
       </div>
 
-      <div className="w-full max-w-full overflow-x-auto flex justify-start md:justify-center py-6 print:py-0 print:overflow-visible">
+      <div className="w-full max-w-full overflow-x-auto flex justify-start md:justify-center py-6 print:py-0 print:overflow-visible cursor-default" onClick={(e) => e.stopPropagation()}>
         <div 
           ref={contentRef} 
           className="bg-white w-[210mm] h-[297mm] min-h-[297mm] max-h-[297mm] p-10 shadow-2xl relative print:shadow-none flex flex-col justify-between box-border overflow-hidden select-none shrink-0" 
@@ -1702,8 +1731,8 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
         >
           <div>
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6 border-b border-gray-200 pb-6">
-              <div className="space-y-3 w-full md:w-auto">
+            <div className="flex flex-row justify-between items-start gap-4 mb-6 border-b border-gray-200 pb-6">
+              <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   {logo ? (
                     <img 
@@ -1730,14 +1759,14 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
                   <p>Support: +8801796361024 | info@ahoron.com</p>
                 </div>
               </div>
-              <div className="w-full md:w-auto text-left md:text-right space-y-2 pt-4 md:pt-0 border-t border-gray-100 md:border-0">
+              <div className="text-right space-y-2">
                 <h2 className="text-3xl font-display font-black text-primary tracking-widest uppercase">INVOICE</h2>
                 <div className="space-y-1 text-sm font-bold text-gray-600">
-                  <div className="flex justify-start md:justify-end gap-2">
+                  <div className="flex justify-end gap-2">
                     <span className="text-gray-400 uppercase tracking-wider text-xs">Invoice No:</span>
                     <span className="text-accent-deep">#{ (order.invoiceNo || order.id).slice(-8).toUpperCase() }</span>
                   </div>
-                  <div className="flex justify-start md:justify-end gap-2">
+                  <div className="flex justify-end gap-2">
                     <span className="text-gray-400 uppercase tracking-wider text-xs">Date:</span>
                     <span className="text-accent-deep">{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
                   </div>
@@ -1746,7 +1775,7 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
             </div>
 
             {/* Info Section - Simple Text Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6 border-b border-gray-200 pb-6">
+            <div className="grid grid-cols-2 gap-8 mb-6 border-b border-gray-200 pb-6">
               <div className="space-y-3">
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Billing To (বিলিং তথ্য)</h3>
                 <div className="space-y-1 block whitespace-normal">
@@ -1809,8 +1838,8 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
 
           <div>
             {/* Summary Footer */}
-            <div className="flex flex-col md:flex-row justify-between items-start gap-8 border-t border-gray-200 pt-6">
-              <div className="flex-1 space-y-6 w-full">
+            <div className="flex flex-row justify-between items-start gap-8 border-t border-gray-200 pt-6">
+              <div className="flex-1 space-y-6">
                 <div className="space-y-2">
                   <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Terms & Conditions</h4>
                   <ul className="text-xs text-gray-500 space-y-1 pl-4 list-disc leading-relaxed">
@@ -1821,7 +1850,7 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
                 </div>
               </div>
 
-              <div className="w-full md:w-85 space-y-2">
+              <div className="w-80 space-y-2">
                 <div className="flex justify-between items-center text-sm text-gray-600 font-medium">
                   <span>Basic Amount:</span>
                   <span className="font-extrabold text-accent-deep">৳{order.total}</span>
@@ -1847,7 +1876,7 @@ function OrderDetailsModal({ order, onClose, onInvoice }: any) {
             </div>
 
             {/* Bottom Bar */}
-            <div className="mt-8 py-3 border-t border-gray-50 text-center flex flex-col sm:flex-row justify-center items-center gap-4">
+            <div className="mt-8 py-3 border-t border-gray-50 text-center flex flex-row justify-between items-center gap-4">
               <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Official Invoice &copy; {new Date().getFullYear()} Aharon Shopping | MOHAMMADPUR DHAKA</p>
               <p className="text-[9px] font-black text-primary uppercase tracking-widest italic font-sans leading-none">A product of info@ahoron.com</p>
             </div>
