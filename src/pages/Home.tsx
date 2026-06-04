@@ -26,6 +26,7 @@ import { adminService } from '../services/adminService';
 import { Product, Category, SliderImage, Producer, PressCoverage } from '../types';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { RecommendedProducts } from '../components/RecommendedProducts';
+import { AharonVideoSection } from '../components/AharonVideoSection';
 
 const FALLBACK_PRODUCERS: Producer[] = [];
 
@@ -523,6 +524,8 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      <AharonVideoSection />
 
       {/* Social Proof Badges with Minimalist Icons */}
       <section className="px-4 md:px-8 max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 select-none">
