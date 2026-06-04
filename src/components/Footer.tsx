@@ -79,7 +79,9 @@ export const Footer = () => {
               </svg>
             </a>
             <a 
-              href="#" 
+              href="https://www.youtube.com/@%E0%A6%86%E0%A6%B9%E0%A6%B0%E0%A7%8B%E0%A6%A3" 
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-12 h-12 rounded-full border border-slate-200 bg-slate-950 text-white flex items-center justify-center transition-all duration-300 hover:scale-110 hover:border-[#FF0000] hover:shadow-[0_0_15px_rgba(255,0,0,0.4)] hover:text-[#FF0000] active:scale-95 cursor-pointer shadow-xs shrink-0"
               title="YouTube"
             >
